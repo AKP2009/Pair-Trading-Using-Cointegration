@@ -83,6 +83,22 @@ st.markdown(
         color: #334155;
         font-size: 12px;
     }
+
+    div[data-baseweb="tab-list"] button {
+        color: #000000 !important;
+    }
+
+    div[data-baseweb="tab-list"] button[aria-selected="true"] {
+        color: #000000 !important;
+    }
+
+    div[data-baseweb="tab-list"] button[aria-selected="false"] {
+        color: #000000 !important;
+    }
+
+    div[data-baseweb="tab-list"] button p {
+        color: #000000 !important;
+    }
     </style>
     """,
     unsafe_allow_html=True,
