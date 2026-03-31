@@ -1,0 +1,32 @@
+{
+  "Banking": [
+    "HDFCBANK.NS",
+    "ICICIBANK.NS",
+    "SBIN.NS",
+    "AXISBANK.NS",
+    "KOTAKBANK.NS",
+    "INDUSINDBK.NS",
+    "BANKBARODA.NS"
+  ],
+  "IT": [
+    "TCS.NS",
+    "INFY.NS",
+    "WIPRO.NS",
+    "HCLTECH.NS",
+    "TECHM.NS",
+    "MPHASIS.NS"
+  ],
+  "Auto": [
+    "MARUTI.NS",
+    "HEROMOTOCO.NS",
+    "EICHERMOT.NS",
+    "BAJAJ-AUTO.NS"
+  ],
+  "Energy": [
+    "RELIANCE.NS",
+    "ONGC.NS",
+    "NTPC.NS",
+    "POWERGRID.NS",
+    "COALINDIA.NS"
+  ]
+}
