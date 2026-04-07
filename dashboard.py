@@ -99,6 +99,32 @@ st.markdown(
     div[data-baseweb="tab-list"] button p {
         color: #000000 !important;
     }
+
+    /* Force Streamlit metric text to black (value, label, delta) */
+    [data-testid="stMetricLabel"] {
+        color: #000000 !important;
+    }
+
+    [data-testid="stMetricValue"] {
+        color: #000000 !important;
+    }
+
+    [data-testid="stMetricDelta"] {
+        color: #000000 !important;
+    }
+
+    [data-testid="stMetricDelta"] * {
+        color: #000000 !important;
+    }
+
+    /* Make download button text white in presentation section */
+    [data-testid="stDownloadButton"] button {
+        color: #ffffff !important;
+    }
+
+    [data-testid="stDownloadButton"] button * {
+        color: #ffffff !important;
+    }
     </style>
     """,
     unsafe_allow_html=True,
@@ -301,11 +327,12 @@ sector_map = {
 }
 sector_df = sector_map.get(sector_option, pd.DataFrame())
 
-tab1, tab2, tab3, tab4 = st.tabs(
+tab1, tab2, tab3, tab4, tab5 = st.tabs(
     [
         "Market Structure",
         "Pairs and Cointegration",
         "Strategy Performance",
+        "Outcome Story",
         "Presentation Assets",
     ]
 )
@@ -550,6 +577,123 @@ with tab3:
         st.info("ml_trade_series.csv not available or missing required columns.")
 
 with tab4:
+    st.subheader("What this model got us")
+    explain_block(
+        "A plain-language outcome summary from baseline and ML-filtered strategy metrics.",
+        "This is the business-style answer to: what did the model improve, what did it hurt, and what should we do next.",
+        "Green signals indicate meaningful improvement; yellow means mixed; red means the filter likely needs retuning.",
+    )
+
+    base_cagr = as_float(baseline_stats, "zscore_strategy", "CAGR")
+    base_mdd = as_float(baseline_stats, "zscore_strategy", "MaxDD")
+    rf_cagr = as_float(ml_stats, "rf_filtered", "CAGR")
+    rf_mdd = as_float(ml_stats, "rf_filtered", "MaxDD")
+
+    final_base = None
+    final_ml = None
+    accept_rate = None
+    active_base = None
+    active_ml = None
+    if not ml_trade.empty:
+        if "equity_base" in ml_trade.columns:
+            final_base = float(ml_trade["equity_base"].iloc[-1])
+        if "equity_ml" in ml_trade.columns:
+            final_ml = float(ml_trade["equity_ml"].iloc[-1])
+        if "rf_accept" in ml_trade.columns:
+            accept_rate = float(ml_trade["rf_accept"].mean())
+        if "position_lag" in ml_trade.columns:
+            active_base = float((ml_trade["position_lag"].abs() > 0).mean())
+        if "position_ml" in ml_trade.columns:
+            active_ml = float((ml_trade["position_ml"].abs() > 0).mean())
+
+    summary = pd.DataFrame(
+        [
+            {
+                "Metric": "Sharpe",
+                "Baseline": base_sharpe,
+                "RF Filtered": ml_sharpe,
+                "Delta (RF - Base)": None if (base_sharpe is None or ml_sharpe is None) else (ml_sharpe - base_sharpe),
+            },
+            {
+                "Metric": "CAGR",
+                "Baseline": base_cagr,
+                "RF Filtered": rf_cagr,
+                "Delta (RF - Base)": None if (base_cagr is None or rf_cagr is None) else (rf_cagr - base_cagr),
+            },
+            {
+                "Metric": "Max Drawdown",
+                "Baseline": base_mdd,
+                "RF Filtered": rf_mdd,
+                "Delta (RF - Base)": None if (base_mdd is None or rf_mdd is None) else (rf_mdd - base_mdd),
+            },
+            {
+                "Metric": "Final Equity",
+                "Baseline": final_base,
+                "RF Filtered": final_ml,
+                "Delta (RF - Base)": None if (final_base is None or final_ml is None) else (final_ml - final_base),
+            },
+        ]
+    )
+
+    def fmt_num(v: float | None, pct: bool = False) -> str:
+        if v is None or pd.isna(v):
+            return "NA"
+        return f"{v:.2%}" if pct else f"{v:.3f}"
+
+    c_out1, c_out2, c_out3, c_out4 = st.columns(4)
+    c_out1.metric("Sharpe delta", fmt_num(None if (base_sharpe is None or ml_sharpe is None) else (ml_sharpe - base_sharpe)))
+    c_out2.metric("CAGR delta", fmt_num(None if (base_cagr is None or rf_cagr is None) else (rf_cagr - base_cagr), pct=True))
+    c_out3.metric("Drawdown delta", fmt_num(None if (base_mdd is None or rf_mdd is None) else (rf_mdd - base_mdd), pct=True))
+    c_out4.metric("RF acceptance", fmt_num(accept_rate, pct=True))
+
+    story_lines = []
+    if base_sharpe is not None and ml_sharpe is not None:
+        if ml_sharpe > base_sharpe:
+            story_lines.append(f"Risk-adjusted performance improved: Sharpe increased from {base_sharpe:.2f} to {ml_sharpe:.2f}.")
+        else:
+            story_lines.append(f"Risk-adjusted performance weakened: Sharpe moved from {base_sharpe:.2f} to {ml_sharpe:.2f}.")
+
+    if base_mdd is not None and rf_mdd is not None:
+        if rf_mdd > base_mdd:
+            story_lines.append(f"Capital protection improved: max drawdown reduced from {base_mdd:.2%} to {rf_mdd:.2%}.")
+        else:
+            story_lines.append(f"Drawdown worsened: max drawdown changed from {base_mdd:.2%} to {rf_mdd:.2%}.")
+
+    if accept_rate is not None:
+        story_lines.append(f"Model selectivity: RF accepted {accept_rate:.1%} of candidate trade opportunities.")
+    if active_base is not None and active_ml is not None:
+        story_lines.append(
+            f"Exposure changed from {active_base:.1%} (baseline active time) to {active_ml:.1%} (RF active time)."
+        )
+
+    if not summary.empty:
+        show_summary = summary.copy()
+        for col in ["Baseline", "RF Filtered", "Delta (RF - Base)"]:
+            show_summary[col] = show_summary[col].apply(lambda x: np.nan if x is None else x)
+        st.dataframe(show_summary, width="stretch")
+
+    if story_lines:
+        st.markdown("### What happened")
+        for line in story_lines:
+            st.write(f"- {line}")
+
+    if base_sharpe is not None and ml_sharpe is not None and base_mdd is not None and rf_mdd is not None:
+        improved_sharpe = ml_sharpe > base_sharpe
+        improved_drawdown = rf_mdd > base_mdd
+        if improved_sharpe and improved_drawdown:
+            st.success("Outcome: ML filter added value by improving quality and reducing risk.")
+        elif improved_sharpe or improved_drawdown:
+            st.warning("Outcome: ML filter gave mixed results. Keep it, but tune threshold/features.")
+        else:
+            st.error("Outcome: ML filter underperformed baseline. Retune model or revert to baseline rules.")
+
+    st.markdown("### Why this likely happened")
+    st.write("- RF model is acting as a gate, rejecting part of the raw Z-score signals.")
+    st.write("- If rejected signals were mostly noisy, Sharpe and drawdown improve.")
+    st.write("- If rejected signals included many profitable trades, CAGR and final equity can drop.")
+    st.write("- Balance this trade-off by tuning probability cutoff and feature set.")
+
+with tab5:
     st.subheader("Generated report images")
     explain_block(
         "Export-ready visual assets from your notebook pipeline.",
