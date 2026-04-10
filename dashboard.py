@@ -744,7 +744,9 @@ with tab4:
             base_return = np.nan
             pred_accuracy = np.nan
             if past_window:
-                spread_ret = window_df[stock_a].pct_change().fillna(0) - window_df["beta"] * window_df[stock_b].pct_change().fillna(0)
+                aligned_prices = price_slice.loc[window_df.index, [stock_a, stock_b]].copy()
+                aligned_prices["beta"] = window_df["beta"]
+                spread_ret = aligned_prices[stock_a].pct_change().fillna(0) - aligned_prices["beta"] * aligned_prices[stock_b].pct_change().fillna(0)
                 base_pos = pd.Series(np.where(base_actions == "LONG_SPREAD", 1, np.where(base_actions == "SHORT_SPREAD", -1, 0)), index=window_df.index)
                 model_pos = pd.Series(np.where(model_actions == "LONG_SPREAD", 1, np.where(model_actions == "SHORT_SPREAD", -1, 0)), index=window_df.index)
                 base_curve = 1 + (base_pos.shift(1).fillna(0) * spread_ret - base_pos.diff().abs().fillna(0) * 0.001)
@@ -782,6 +784,27 @@ with tab4:
                 ascending=[False, False, False],
             )
             best = scored_df.iloc[0]
+
+            action_bg = "#e2e8f0"
+            action_fg = "#1e293b"
+            if str(best.latest_action) == "LONG_SPREAD":
+                action_bg = "#dcfce7"
+                action_fg = "#166534"
+            elif str(best.latest_action) == "SHORT_SPREAD":
+                action_bg = "#ffe4e6"
+                action_fg = "#9f1239"
+
+            st.markdown(
+                f"""
+                <div style=\"background:#ffffff;border:1px solid rgba(148,163,184,0.25);border-radius:14px;padding:14px 16px;margin-bottom:12px;\">
+                    <div style=\"font-size:13px;color:#475569;\">Timeline summary for <b>{analysis_label}</b></div>
+                    <div style=\"margin-top:8px;font-size:18px;color:#0f172a;font-weight:700;\">Best Pair: {best.stock_a} vs {best.stock_b}</div>
+                    <div style=\"margin-top:8px;display:inline-block;padding:6px 12px;border-radius:999px;background:{action_bg};color:{action_fg};font-weight:700;\">Recommended Action: {best.latest_action}</div>
+                    <div style=\"margin-top:8px;font-size:13px;color:#334155;\">Model score: {best.model_score:.3f} | Validation F1: {best.validation_f1:.3f} | Avg RF prob: {best.mean_probability:.3f}</div>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
 
             c1, c2, c3, c4 = st.columns(4)
             c1.metric("Best pair", f"{best.stock_a} vs {best.stock_b}")
@@ -835,8 +858,32 @@ with tab4:
                     pred_trade = pd.Series((best_model_actions != "NO_TRADE").astype(int), index=best_window.index)
                     actual_trade = best_window["y"].astype(int)
                     confusion = pd.crosstab(pred_trade, actual_trade, rownames=["Predicted Trade"], colnames=["Actual Outcome"], dropna=False)
-                    st.write("Prediction vs actual table")
-                    st.dataframe(confusion, width="stretch")
+                    st.write("Prediction vs actual")
+
+                    # force 2x2 layout for consistent interpretation
+                    confusion = confusion.reindex(index=[0, 1], columns=[0, 1], fill_value=0)
+                    fig_cm = go.Figure(
+                        data=go.Heatmap(
+                            z=confusion.values,
+                            x=["Actual 0 (No convergence)", "Actual 1 (Convergence)"],
+                            y=["Pred 0 (Skip)", "Pred 1 (Take trade)"],
+                            colorscale="Blues",
+                            text=confusion.values,
+                            texttemplate="%{text}",
+                            textfont={"size": 14},
+                            colorbar=dict(title="Count"),
+                        )
+                    )
+                    fig_cm.update_layout(template="plotly_white", height=360, title="Confusion Matrix (Predicted vs Reality)")
+                    st.plotly_chart(fig_cm, width="stretch")
+
+                    hit_rate = float((pred_trade == actual_trade).mean())
+                    if hit_rate >= 0.60:
+                        st.success(f"Prediction quality looks strong in this window (accuracy {hit_rate:.1%}).")
+                    elif hit_rate >= 0.50:
+                        st.warning(f"Prediction quality is moderate in this window (accuracy {hit_rate:.1%}).")
+                    else:
+                        st.error(f"Prediction quality is weak in this window (accuracy {hit_rate:.1%}).")
 
                     st.markdown("#### Profit / Loss")
                     explain_block(
@@ -845,7 +892,9 @@ with tab4:
                         "Positive ending equity means profit; negative means loss after simple transaction costs.",
                     )
 
-                    spread_ret = best_window[str(best["stock_a"])].pct_change().fillna(0) - best_window["beta"] * best_window[str(best["stock_b"])].pct_change().fillna(0)
+                    aligned_prices = best_price_slice.loc[best_window.index, [str(best["stock_a"]), str(best["stock_b"])]].copy()
+                    aligned_prices["beta"] = best_window["beta"]
+                    spread_ret = aligned_prices[str(best["stock_a"])].pct_change().fillna(0) - aligned_prices["beta"] * aligned_prices[str(best["stock_b"])].pct_change().fillna(0)
                     base_pos = pd.Series(np.where(best_base_actions == "LONG_SPREAD", 1, np.where(best_base_actions == "SHORT_SPREAD", -1, 0)), index=best_window.index)
                     model_pos = pd.Series(np.where(best_model_actions == "LONG_SPREAD", 1, np.where(best_model_actions == "SHORT_SPREAD", -1, 0)), index=best_window.index)
                     base_curve = (1 + (base_pos.shift(1).fillna(0) * spread_ret - base_pos.diff().abs().fillna(0) * 0.001)).cumprod()
@@ -862,6 +911,27 @@ with tab4:
                     pnl_col1.metric("Model return", f"{model_return:.2%}")
                     pnl_col2.metric("Baseline return", f"{base_return:.2%}")
                     pnl_col3.metric("Return delta", f"{(model_return - base_return):.2%}")
+
+                    pnl_bg = "#e2e8f0"
+                    pnl_fg = "#1e293b"
+                    pnl_text = "BREAKEVEN"
+                    if model_return > 0:
+                        pnl_bg = "#dcfce7"
+                        pnl_fg = "#166534"
+                        pnl_text = "PROFIT"
+                    elif model_return < 0:
+                        pnl_bg = "#ffe4e6"
+                        pnl_fg = "#9f1239"
+                        pnl_text = "LOSS"
+
+                    st.markdown(
+                        f"""
+                        <div style=\"display:inline-block;padding:7px 14px;border-radius:999px;background:{pnl_bg};color:{pnl_fg};font-weight:700;\">
+                            Window Result: {pnl_text}
+                        </div>
+                        """,
+                        unsafe_allow_html=True,
+                    )
 
                     if model_return > 0:
                         st.success("This time window produced profit after filtering by the model.")
