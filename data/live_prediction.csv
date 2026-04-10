@@ -1,0 +1,2 @@
+date,stock_a,stock_b,zscore,rf_probability,baseline_action,final_action,threshold,model_name,validation_f1,test_f1,test_roc_auc
+2026-04-10,HEROMOTOCO.NS,EICHERMOT.NS,0.5388439726731759,0.2840789158053185,NO_TRADE,NO_TRADE,0.55,HEROMOTOCO__EICHERMOT,0.37735849056603776,0.39384615384615385,0.624592093296956

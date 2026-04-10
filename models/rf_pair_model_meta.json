@@ -1,0 +1,31 @@
+{
+  "model_name": "HEROMOTOCO__EICHERMOT",
+  "stock_a": "HEROMOTOCO.NS",
+  "stock_b": "EICHERMOT.NS",
+  "beta_static": 0.6993946653733907,
+  "feature_cols": [
+    "z",
+    "z_chg_5",
+    "z_chg_20",
+    "corr_30",
+    "spread_vol_20",
+    "spread_vol_60"
+  ],
+  "threshold": 0.55,
+  "model_path": "C:\\projects\\Pair-Trading-Project\\models\\pair_models\\HEROMOTOCO__EICHERMOT.joblib",
+  "dataset_last_date": "2026-04-10",
+  "live_zscore": 0.5388439726731759,
+  "live_probability": 0.2840789158053185,
+  "baseline_action": "NO_TRADE",
+  "final_action": "NO_TRADE",
+  "validation_accuracy": 0.7322515212981744,
+  "validation_precision": 0.32786885245901637,
+  "validation_recall": 0.4444444444444444,
+  "validation_f1": 0.37735849056603776,
+  "validation_roc_auc": 0.6196305486628068,
+  "test_accuracy": 0.602020202020202,
+  "test_precision": 0.27586206896551724,
+  "test_recall": 0.6881720430107527,
+  "test_f1": 0.39384615384615385,
+  "test_roc_auc": 0.624592093296956
+}

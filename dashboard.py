@@ -1,5 +1,6 @@
 from pathlib import Path
 
+import joblib
 import numpy as np
 import pandas as pd
 import plotly.colors
@@ -10,6 +11,7 @@ import streamlit as st
 
 BASE_DIR = Path(__file__).resolve().parent
 DATA_DIR = BASE_DIR / "data"
+MODEL_DIR = BASE_DIR / "models"
 OUT_DIR = BASE_DIR / "outputs"
 
 
@@ -147,6 +149,27 @@ def load_table(name: str) -> pd.DataFrame:
     return pd.DataFrame()
 
 
+def load_model_table(name: str) -> pd.DataFrame:
+    path = MODEL_DIR / name
+    if path.exists():
+        return pd.read_csv(path)
+    return pd.DataFrame()
+
+
+def load_model_json(name: str) -> dict:
+    path = MODEL_DIR / name
+    if path.exists():
+        return json.loads(path.read_text(encoding="utf-8"))
+    return {}
+
+
+def load_model_artifact(path_str: str):
+    path = Path(path_str)
+    if path.exists():
+        return joblib.load(path)
+    return None
+
+
 def as_float(df: pd.DataFrame, strategy: str, col: str) -> float | None:
     if df.empty or "strategy" not in df.columns or col not in df.columns:
         return None
@@ -172,6 +195,45 @@ def explain_block(what: str, why: str, how: str) -> None:
     )
 
 
+def build_pair_features(
+    prices_window: pd.DataFrame,
+    stock_a: str,
+    stock_b: str,
+    beta_static: float,
+    beta_window: int = 252,
+    z_window: int = 30,
+    horizon: int = 10,
+) -> pd.DataFrame:
+    beta_roll = prices_window[stock_a].rolling(beta_window).cov(prices_window[stock_b]) / prices_window[stock_b].rolling(beta_window).var()
+    beta = beta_roll.fillna(beta_static)
+
+    spread = prices_window[stock_a] - beta * prices_window[stock_b]
+    spread_mean = spread.rolling(z_window).mean()
+    spread_std = spread.rolling(z_window).std()
+    z = (spread - spread_mean) / spread_std
+
+    ret_a = prices_window[stock_a].pct_change()
+    ret_b = prices_window[stock_b].pct_change()
+    spread_ret = ret_a - beta * ret_b
+
+    feat = pd.DataFrame(index=prices_window.index)
+    feat["z"] = z
+    feat["z_chg_5"] = z - z.shift(5)
+    feat["z_chg_20"] = z - z.shift(20)
+    feat["corr_30"] = prices_window[stock_a].rolling(30).corr(prices_window[stock_b])
+    feat["spread_vol_20"] = spread_ret.rolling(20).std()
+    feat["spread_vol_60"] = spread_ret.rolling(60).std()
+    feat["beta"] = beta
+    feat["spread"] = spread
+
+    future_spread = spread.shift(-horizon)
+    dist_now = (spread - spread_mean).abs()
+    dist_future = (future_spread - spread_mean).abs()
+    feat["y"] = (dist_future < dist_now).astype(int)
+
+    return feat.dropna()
+
+
 prices = load_csv("nifty_prices_clean.csv")
 prices_train = load_csv("prices_train.csv")
 sector_auto = load_csv("sector_auto.csv")
@@ -184,6 +246,8 @@ candidate_pairs = load_table("all_candidate_pairs.csv")
 baseline_stats = load_table("baseline_backtest_stats.csv")
 ml_stats = load_table("ml_vs_baseline_stats.csv")
 ml_trade = load_csv("ml_trade_series.csv")
+live_pred = load_table("live_prediction.csv")
+pair_registry = load_model_table("pair_model_registry.csv")
 
 
 st.markdown(
@@ -225,6 +289,21 @@ price_view_mode = st.sidebar.radio(
 
 z_entry = st.sidebar.slider("Z-score entry threshold", min_value=1.0, max_value=3.5, value=2.0, step=0.1)
 z_exit = st.sidebar.slider("Z-score exit threshold", min_value=0.1, max_value=1.5, value=0.5, step=0.1)
+
+available_years = sorted(prices.index.year.unique().tolist())
+timeline_years = st.sidebar.select_slider(
+    "Timeline window (analysis)",
+    options=available_years,
+    value=(available_years[0], available_years[-1]),
+)
+
+analysis_start_year, analysis_end_year = timeline_years
+analysis_start = pd.Timestamp(f"{analysis_start_year}-01-01")
+analysis_end = pd.Timestamp(f"{analysis_end_year}-12-31")
+if analysis_end < analysis_start:
+    analysis_start, analysis_end = analysis_end, analysis_start
+
+analysis_label = f"{analysis_start.year} to {analysis_end.year}"
 
 pair_labels = []
 if not selected_pairs.empty:
@@ -318,6 +397,44 @@ ml_sharpe = as_float(ml_stats, "rf_filtered", "Sharpe")
 
 st.info(strategy_insight(base_sharpe, ml_sharpe))
 
+st.markdown("### Live Model Recommendation")
+if not live_pred.empty:
+    row_live = live_pred.iloc[0]
+    live_date = str(row_live.get("date", "NA"))
+    live_pair = f"{row_live.get('stock_a', 'NA')} vs {row_live.get('stock_b', 'NA')}"
+    live_action = str(row_live.get("final_action", "NO_TRADE"))
+    baseline_action = str(row_live.get("baseline_action", "NO_TRADE"))
+    live_prob = float(row_live.get("rf_probability", np.nan))
+    live_z = float(row_live.get("zscore", np.nan))
+    live_thr = float(row_live.get("threshold", np.nan))
+
+    if live_action == "LONG_SPREAD":
+        action_color = "#166534"
+        action_bg = "#dcfce7"
+        action_text = "LONG SPREAD"
+    elif live_action == "SHORT_SPREAD":
+        action_color = "#9f1239"
+        action_bg = "#ffe4e6"
+        action_text = "SHORT SPREAD"
+    else:
+        action_color = "#1e293b"
+        action_bg = "#e2e8f0"
+        action_text = "NO TRADE"
+
+    st.markdown(
+        f"""
+        <div style=\"background:#ffffff;border:1px solid rgba(148,163,184,0.25);border-radius:14px;padding:14px 16px;\">
+            <div style=\"font-size:13px;color:#334155;\">As of {live_date} | Pair: {live_pair}</div>
+            <div style=\"margin-top:8px;display:inline-block;padding:6px 12px;border-radius:999px;background:{action_bg};color:{action_color};font-weight:700;\">{action_text}</div>
+            <div style=\"margin-top:10px;font-size:13px;color:#0f172a;\">RF confidence: {live_prob:.3f} (threshold {live_thr:.2f}) | Current Z-score: {live_z:.3f}</div>
+            <div style=\"margin-top:6px;font-size:13px;color:#475569;\">Baseline signal: {baseline_action}. Final action is after ML filter.</div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+else:
+    st.warning("Live prediction not found. Run model_pipeline.py to generate data/live_prediction.csv.")
+
 
 sector_map = {
     "Banking": sector_banking,
@@ -327,11 +444,12 @@ sector_map = {
 }
 sector_df = sector_map.get(sector_option, pd.DataFrame())
 
-tab1, tab2, tab3, tab4, tab5 = st.tabs(
+tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs(
     [
         "Market Structure",
         "Pairs and Cointegration",
         "Strategy Performance",
+        "Timeline Model",
         "Outcome Story",
         "Presentation Assets",
     ]
@@ -577,6 +695,190 @@ with tab3:
         st.info("ml_trade_series.csv not available or missing required columns.")
 
 with tab4:
+    st.subheader("Timeline Model")
+    explain_block(
+        "A date-range analysis mode that ranks pairs with the trained models.",
+        "This answers: for a chosen year window, which pair looks best and what action should be taken.",
+        "Use the timeline selector in the sidebar. The table is ranked by model score, then the top pair is analyzed in detail.",
+    )
+
+    if pair_registry.empty:
+        st.warning("Pair model registry not found. Run model_pipeline.py first.")
+    else:
+        feature_cols = ["z", "z_chg_5", "z_chg_20", "corr_30", "spread_vol_20", "spread_vol_60"]
+        scored_rows: list[dict[str, object]] = []
+        window_start_buffer = analysis_start - pd.Timedelta(days=420)
+        past_window = analysis_end <= pd.Timestamp(prices.index.max())
+
+        for _, reg_row in pair_registry.iterrows():
+            model = load_model_artifact(str(reg_row["model_path"]))
+            if model is None:
+                continue
+
+            stock_a = str(reg_row["stock_a"])
+            stock_b = str(reg_row["stock_b"])
+            beta_static = float(reg_row["beta_static"])
+            threshold = float(reg_row.get("threshold", 0.55))
+
+            price_slice = prices.loc[window_start_buffer:analysis_end].copy()
+            if stock_a not in price_slice.columns or stock_b not in price_slice.columns:
+                continue
+
+            feature_df = build_pair_features(price_slice, stock_a, stock_b, beta_static)
+            window_df = feature_df.loc[analysis_start:analysis_end].copy()
+            if window_df.empty:
+                continue
+
+            probs = pd.Series(model.predict_proba(window_df[feature_cols])[:, 1], index=window_df.index)
+            base_actions = np.where(window_df["z"] > z_entry, "SHORT_SPREAD", np.where(window_df["z"] < -z_entry, "LONG_SPREAD", "NO_TRADE"))
+            model_actions = np.where((probs >= threshold) & (base_actions != "NO_TRADE"), base_actions, "NO_TRADE")
+
+            trade_rate = float((model_actions != "NO_TRADE").mean())
+            mean_prob = float(probs.mean())
+            hit_rate = float(window_df["y"].mean())
+            latest_action = str(model_actions[-1])
+            latest_prob = float(probs.iloc[-1])
+            score = 0.45 * float(reg_row["validation_f1"]) + 0.35 * mean_prob + 0.20 * trade_rate
+
+            model_return = np.nan
+            base_return = np.nan
+            pred_accuracy = np.nan
+            if past_window:
+                spread_ret = window_df[stock_a].pct_change().fillna(0) - window_df["beta"] * window_df[stock_b].pct_change().fillna(0)
+                base_pos = pd.Series(np.where(base_actions == "LONG_SPREAD", 1, np.where(base_actions == "SHORT_SPREAD", -1, 0)), index=window_df.index)
+                model_pos = pd.Series(np.where(model_actions == "LONG_SPREAD", 1, np.where(model_actions == "SHORT_SPREAD", -1, 0)), index=window_df.index)
+                base_curve = 1 + (base_pos.shift(1).fillna(0) * spread_ret - base_pos.diff().abs().fillna(0) * 0.001)
+                model_curve = 1 + (model_pos.shift(1).fillna(0) * spread_ret - model_pos.diff().abs().fillna(0) * 0.001)
+                base_return = float(base_curve.prod() - 1)
+                model_return = float(model_curve.prod() - 1)
+                pred_accuracy = float((pd.Series((model_actions != "NO_TRADE").astype(int), index=window_df.index) == window_df["y"]).mean())
+
+            scored_rows.append(
+                {
+                    "model_name": reg_row["model_name"],
+                    "stock_a": stock_a,
+                    "stock_b": stock_b,
+                    "validation_f1": float(reg_row["validation_f1"]),
+                    "validation_roc_auc": float(reg_row["validation_roc_auc"]),
+                    "mean_probability": mean_prob,
+                    "trade_rate": trade_rate,
+                    "hit_rate": hit_rate,
+                    "latest_action": latest_action,
+                    "latest_probability": latest_prob,
+                    "model_score": score,
+                    "threshold": threshold,
+                    "window_model_return": model_return,
+                    "window_baseline_return": base_return,
+                    "prediction_accuracy": pred_accuracy,
+                    "model_path": reg_row["model_path"],
+                }
+            )
+
+        if not scored_rows:
+            st.warning("No pair models could be evaluated for the selected window.")
+        else:
+            scored_df = pd.DataFrame(scored_rows).sort_values(
+                ["model_score", "validation_f1", "mean_probability"],
+                ascending=[False, False, False],
+            )
+            best = scored_df.iloc[0]
+
+            c1, c2, c3, c4 = st.columns(4)
+            c1.metric("Best pair", f"{best.stock_a} vs {best.stock_b}")
+            c2.metric("Best action", str(best.latest_action))
+            c3.metric("Model score", f"{best.model_score:.3f}")
+            c4.metric("Avg RF prob", f"{best.mean_probability:.3f}")
+
+            st.dataframe(
+                scored_df[[
+                    "model_name",
+                    "stock_a",
+                    "stock_b",
+                    "model_score",
+                    "validation_f1",
+                    "mean_probability",
+                    "trade_rate",
+                    "latest_action",
+                    "latest_probability",
+                ]].head(10),
+                width="stretch",
+            )
+
+            best_model = load_model_artifact(str(best["model_path"]))
+            if best_model is not None:
+                best_price_slice = prices.loc[window_start_buffer:analysis_end].copy()
+                best_feat = build_pair_features(best_price_slice, str(best["stock_a"]), str(best["stock_b"]), float(pair_registry.loc[pair_registry["model_name"] == best["model_name"], "beta_static"].iloc[0]))
+                best_window = best_feat.loc[analysis_start:analysis_end].copy()
+
+                if not best_window.empty:
+                    best_probs = pd.Series(best_model.predict_proba(best_window[feature_cols])[:, 1], index=best_window.index)
+                    best_base_actions = np.where(best_window["z"] > z_entry, "SHORT_SPREAD", np.where(best_window["z"] < -z_entry, "LONG_SPREAD", "NO_TRADE"))
+                    best_model_actions = np.where((best_probs >= float(best["threshold"])) & (best_base_actions != "NO_TRADE"), best_base_actions, "NO_TRADE")
+
+                    st.markdown("#### Prediction vs Reality")
+                    explain_block(
+                        "Compares model signal to realized outcome in the selected past window.",
+                        "Shows whether the model is calling good trades or just producing confident predictions.",
+                        "If predicted trade = 1 but actual = 0, the model would have taken a bad trade.",
+                    )
+
+                    pred_df = pd.DataFrame(
+                        {
+                            "RF Probability": best_probs,
+                            "Actual Outcome": best_window["y"].rolling(10).mean(),
+                        }
+                    ).dropna()
+                    fig_pred = px.line(pred_df, x=pred_df.index, y=pred_df.columns, title="Predicted confidence vs realized outcome")
+                    fig_pred.update_layout(template="plotly_white", height=380, xaxis_title="Date", yaxis_title="Value")
+                    st.plotly_chart(fig_pred, width="stretch")
+
+                    pred_trade = pd.Series((best_model_actions != "NO_TRADE").astype(int), index=best_window.index)
+                    actual_trade = best_window["y"].astype(int)
+                    confusion = pd.crosstab(pred_trade, actual_trade, rownames=["Predicted Trade"], colnames=["Actual Outcome"], dropna=False)
+                    st.write("Prediction vs actual table")
+                    st.dataframe(confusion, width="stretch")
+
+                    st.markdown("#### Profit / Loss")
+                    explain_block(
+                        "Separate performance view for the same chosen window.",
+                        "This answers whether the model made or lost money over the selected years.",
+                        "Positive ending equity means profit; negative means loss after simple transaction costs.",
+                    )
+
+                    spread_ret = best_window[str(best["stock_a"])].pct_change().fillna(0) - best_window["beta"] * best_window[str(best["stock_b"])].pct_change().fillna(0)
+                    base_pos = pd.Series(np.where(best_base_actions == "LONG_SPREAD", 1, np.where(best_base_actions == "SHORT_SPREAD", -1, 0)), index=best_window.index)
+                    model_pos = pd.Series(np.where(best_model_actions == "LONG_SPREAD", 1, np.where(best_model_actions == "SHORT_SPREAD", -1, 0)), index=best_window.index)
+                    base_curve = (1 + (base_pos.shift(1).fillna(0) * spread_ret - base_pos.diff().abs().fillna(0) * 0.001)).cumprod()
+                    model_curve = (1 + (model_pos.shift(1).fillna(0) * spread_ret - model_pos.diff().abs().fillna(0) * 0.001)).cumprod()
+
+                    curve_df = pd.DataFrame({"Baseline": base_curve, "ML Filtered": model_curve})
+                    fig_curve = px.line(curve_df, x=curve_df.index, y=curve_df.columns, title="Profit / Loss curve")
+                    fig_curve.update_layout(template="plotly_white", height=420, xaxis_title="Date", yaxis_title="Equity")
+                    st.plotly_chart(fig_curve, width="stretch")
+
+                    model_return = float(model_curve.iloc[-1] - 1)
+                    base_return = float(base_curve.iloc[-1] - 1)
+                    pnl_col1, pnl_col2, pnl_col3 = st.columns(3)
+                    pnl_col1.metric("Model return", f"{model_return:.2%}")
+                    pnl_col2.metric("Baseline return", f"{base_return:.2%}")
+                    pnl_col3.metric("Return delta", f"{(model_return - base_return):.2%}")
+
+                    if model_return > 0:
+                        st.success("This time window produced profit after filtering by the model.")
+                    elif model_return < 0:
+                        st.error("This time window produced a loss after filtering by the model.")
+                    else:
+                        st.info("This time window was approximately breakeven after filtering by the model.")
+
+            st.markdown("#### Why this pair was chosen")
+            st.write("- Highest combined model score across the chosen window.")
+            st.write("- Strong validation performance from the pair-specific classifier.")
+            st.write("- Acceptable signal rate without firing on every noisy move.")
+
+            if not past_window:
+                st.warning("The selected end year extends beyond currently available historical data, so prediction-vs-reality and P/L are unavailable.")
+
+with tab5:
     st.subheader("What this model got us")
     explain_block(
         "A plain-language outcome summary from baseline and ML-filtered strategy metrics.",
@@ -693,7 +995,7 @@ with tab4:
     st.write("- If rejected signals included many profitable trades, CAGR and final equity can drop.")
     st.write("- Balance this trade-off by tuning probability cutoff and feature set.")
 
-with tab5:
+with tab6:
     st.subheader("Generated report images")
     explain_block(
         "Export-ready visual assets from your notebook pipeline.",
