@@ -1,0 +1,4 @@
+pair,stock_a,stock_b,direction,entry_date,entry_z,days_held,shares_a,shares_b,entry_price_a,entry_price_b,capital,last_date
+HEROMOTOCO__EICHERMOT,HEROMOTOCO.NS,EICHERMOT.NS,0,,0.0,0,0,0,0.0,0.0,200000.0,2026-08-31
+HDFCBANK__KOTAKBANK,HDFCBANK.NS,KOTAKBANK.NS,0,,0.0,0,0,0,0.0,0.0,200000.0,2026-08-31
+INFY__HCLTECH,INFY.NS,HCLTECH.NS,0,,0.0,0,0,0,0.0,0.0,200000.0,2026-08-31

@@ -1,9 +1,9 @@
+import json
 from pathlib import Path
 
 import joblib
 import numpy as np
 import pandas as pd
-import plotly.colors
 import plotly.express as px
 import plotly.graph_objects as go
 import streamlit as st
@@ -25,108 +25,137 @@ st.set_page_config(
 st.markdown(
     """
     <style>
-    @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
 
     :root {
-        --bg: #f4f7fb;
+        --bg: #f4f7f2;
         --card: #ffffff;
         --ink: #0f172a;
-        --muted: #475569;
+        --muted: #55635a;
         --brand: #0f766e;
-        --accent: #ea580c;
+        --brand-dark: #0b5c56;
+        --accent: #b8790f;
+        --gain: #157a45;
+        --loss: #b7362b;
+        --line: rgba(15, 46, 38, 0.10);
     }
+
+    html, body, [class*="css"] { font-family: 'Space Grotesk', sans-serif; }
 
     .stApp {
         background:
-            radial-gradient(circle at 15% 15%, rgba(15, 118, 110, 0.10), transparent 30%),
-            radial-gradient(circle at 85% 20%, rgba(234, 88, 12, 0.12), transparent 35%),
-            linear-gradient(120deg, #f8fafc 0%, #f1f5f9 100%);
+            radial-gradient(circle at 12% 8%, rgba(15, 118, 110, 0.08), transparent 32%),
+            radial-gradient(circle at 88% 12%, rgba(184, 121, 15, 0.08), transparent 34%),
+            linear-gradient(160deg, #f7faf5 0%, #f0f4ec 100%);
         color: var(--ink);
-        font-family: 'Space Grotesk', sans-serif;
     }
 
-    h1, h2, h3 {
-        color: var(--ink);
-        letter-spacing: 0.2px;
-    }
+    h1, h2, h3 { color: var(--ink); letter-spacing: 0.1px; font-weight: 700; }
 
+    /* ---------- hero ---------- */
     .hero {
-        background: linear-gradient(135deg, #0f766e 0%, #0ea5a3 60%, #14b8a6 100%);
+        background: linear-gradient(135deg, #0b5c56 0%, #0f766e 55%, #14b8a6 100%);
         border-radius: 20px;
-        padding: 24px;
+        padding: 28px 30px;
         color: white;
-        box-shadow: 0 10px 30px rgba(2, 8, 23, 0.15);
-        margin-bottom: 16px;
+        box-shadow: 0 14px 34px rgba(6, 40, 34, 0.22);
+        margin-bottom: 18px;
+        position: relative;
+        overflow: hidden;
     }
+    .hero::after {
+        content: "";
+        position: absolute; inset: 0;
+        background: radial-gradient(circle at 85% -10%, rgba(255,255,255,0.18), transparent 55%);
+        pointer-events: none;
+    }
+    .hero .eyebrow {
+        font-family: 'IBM Plex Mono', monospace; font-size: 11.5px; letter-spacing: 0.14em;
+        text-transform: uppercase; opacity: 0.85; margin-bottom: 8px;
+    }
+    .hero h1 { color: white; margin: 0; font-size: 2rem; }
+    .hero p.sub { margin: 8px 0 0 0; opacity: 0.95; font-size: 1.02rem; max-width: 62ch; }
 
+    /* ---------- kpi cards ---------- */
     .kpi {
         background: var(--card);
-        border-radius: 16px;
+        border-radius: 14px;
         padding: 14px 18px;
-        box-shadow: 0 8px 24px rgba(15, 23, 42, 0.07);
-        border: 1px solid rgba(148, 163, 184, 0.25);
+        box-shadow: 0 6px 18px rgba(15, 46, 38, 0.06);
+        border: 1px solid var(--line);
+        transition: box-shadow .15s ease, transform .15s ease;
     }
-
+    .kpi:hover { box-shadow: 0 10px 26px rgba(15, 46, 38, 0.10); transform: translateY(-1px); }
     .kpi-title {
-        color: var(--muted);
-        font-size: 13px;
-        margin-bottom: 4px;
+        color: var(--muted); font-size: 12.5px; margin-bottom: 5px;
+        font-family: 'IBM Plex Mono', monospace; text-transform: uppercase; letter-spacing: 0.04em;
     }
+    .kpi-value { color: var(--ink); font-size: 25px; font-weight: 700; line-height: 1.1; }
+    .kpi-value.brand { color: var(--brand-dark); }
+    .kpi-value.accent { color: var(--accent); }
 
-    .kpi-value {
-        color: var(--ink);
-        font-size: 24px;
-        font-weight: 700;
-        line-height: 1.1;
+    .mono { font-family: 'IBM Plex Mono', monospace; color: var(--muted); font-size: 12px; }
+
+    /* ---------- section framing ---------- */
+    .section-card {
+        background: var(--card); border: 1px solid var(--line); border-radius: 16px;
+        padding: 16px 18px; box-shadow: 0 6px 18px rgba(15, 46, 38, 0.05); margin: 4px 0 14px 0;
     }
-
-    .mono {
-        font-family: 'IBM Plex Mono', monospace;
-        color: #334155;
-        font-size: 12px;
+    .callout {
+        background: #ffffffcc; border: 1px solid var(--line); border-left: 3px solid var(--accent);
+        border-radius: 12px; padding: 12px 16px; margin: 8px 0 14px 0;
     }
+    .callout .what, .callout .why, .callout .how { font-size: 13px; color: var(--ink); margin: 2px 0; }
+    .callout b { color: var(--brand-dark); }
 
+    .pill { display:inline-block; padding:6px 14px; border-radius:999px; font-weight:700; font-size: 13px; }
+    .pill.long { background:#dcfce7; color:#166534; }
+    .pill.short { background:#ffe4e6; color:#9f1239; }
+    .pill.flat { background:#e2e8f0; color:#1e293b; }
+
+    /* ---------- tabs ---------- */
+    div[data-baseweb="tab-list"] {
+        gap: 4px; border-bottom: 1px solid var(--line);
+    }
     div[data-baseweb="tab-list"] button {
-        color: #000000 !important;
+        color: var(--muted) !important;
+        font-weight: 600;
+        border-radius: 10px 10px 0 0 !important;
     }
-
+    div[data-baseweb="tab-list"] button p { color: inherit !important; font-size: 13.5px; }
     div[data-baseweb="tab-list"] button[aria-selected="true"] {
-        color: #000000 !important;
+        color: var(--brand-dark) !important;
+        background: rgba(15, 118, 110, 0.08);
     }
+    div[data-baseweb="tab-highlight"] { background-color: var(--brand) !important; }
 
-    div[data-baseweb="tab-list"] button[aria-selected="false"] {
-        color: #000000 !important;
+    /* ---------- metrics ---------- */
+    [data-testid="stMetric"] {
+        background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+        padding: 10px 14px 6px;
     }
-
-    div[data-baseweb="tab-list"] button p {
-        color: #000000 !important;
-    }
-
-    /* Force Streamlit metric text to black (value, label, delta) */
-    [data-testid="stMetricLabel"] {
-        color: #000000 !important;
-    }
-
+    [data-testid="stMetricLabel"] { color: var(--muted) !important; font-family: 'IBM Plex Mono', monospace; font-size: 11.5px !important; text-transform: uppercase; letter-spacing: .03em; }
     [data-testid="stMetricValue"] {
-        color: #000000 !important;
+        color: var(--ink) !important; font-size: 1.65rem !important;
+        white-space: normal !important; overflow-wrap: anywhere; line-height: 1.15;
     }
+    [data-testid="stMetricDelta"] svg { display: inline; }
 
-    [data-testid="stMetricDelta"] {
-        color: #000000 !important;
-    }
+    /* ---------- sidebar ---------- */
+    section[data-testid="stSidebar"] { border-right: 1px solid var(--line); }
+    section[data-testid="stSidebar"] h2, section[data-testid="stSidebar"] h3 { color: var(--brand-dark); }
 
-    [data-testid="stMetricDelta"] * {
-        color: #000000 !important;
-    }
-
-    /* Make download button text white in presentation section */
+    /* ---------- download buttons ---------- */
     [data-testid="stDownloadButton"] button {
-        color: #ffffff !important;
+        background: var(--brand) !important; color: #ffffff !important; border: none !important;
+        border-radius: 10px !important; font-weight: 600 !important;
     }
+    [data-testid="stDownloadButton"] button:hover { background: var(--brand-dark) !important; }
 
-    [data-testid="stDownloadButton"] button * {
-        color: #ffffff !important;
-    }
+    /* ---------- dataframes ---------- */
+    [data-testid="stDataFrame"] { border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+
+    hr { border-color: var(--line); }
     </style>
     """,
     unsafe_allow_html=True,
@@ -185,53 +214,18 @@ def as_float(df: pd.DataFrame, strategy: str, col: str) -> float | None:
 def explain_block(what: str, why: str, how: str) -> None:
     st.markdown(
         f"""
-        <div style=\"background:#ffffffcc;border:1px solid rgba(148,163,184,0.25);border-radius:14px;padding:12px 14px;margin:6px 0 12px 0;\">
-            <div style=\"font-size:13px;color:#0f172a;\"><b>What:</b> {what}</div>
-            <div style=\"font-size:13px;color:#0f172a;\"><b>Why:</b> {why}</div>
-            <div style=\"font-size:13px;color:#0f172a;\"><b>How to read:</b> {how}</div>
+        <div class="callout">
+            <div class="what"><b>What</b> &nbsp;{what}</div>
+            <div class="why"><b>Why</b> &nbsp;{why}</div>
+            <div class="how"><b>How to read</b> &nbsp;{how}</div>
         </div>
         """,
         unsafe_allow_html=True,
     )
 
 
-def build_pair_features(
-    prices_window: pd.DataFrame,
-    stock_a: str,
-    stock_b: str,
-    beta_static: float,
-    beta_window: int = 252,
-    z_window: int = 30,
-    horizon: int = 10,
-) -> pd.DataFrame:
-    beta_roll = prices_window[stock_a].rolling(beta_window).cov(prices_window[stock_b]) / prices_window[stock_b].rolling(beta_window).var()
-    beta = beta_roll.fillna(beta_static)
-
-    spread = prices_window[stock_a] - beta * prices_window[stock_b]
-    spread_mean = spread.rolling(z_window).mean()
-    spread_std = spread.rolling(z_window).std()
-    z = (spread - spread_mean) / spread_std
-
-    ret_a = prices_window[stock_a].pct_change()
-    ret_b = prices_window[stock_b].pct_change()
-    spread_ret = ret_a - beta * ret_b
-
-    feat = pd.DataFrame(index=prices_window.index)
-    feat["z"] = z
-    feat["z_chg_5"] = z - z.shift(5)
-    feat["z_chg_20"] = z - z.shift(20)
-    feat["corr_30"] = prices_window[stock_a].rolling(30).corr(prices_window[stock_b])
-    feat["spread_vol_20"] = spread_ret.rolling(20).std()
-    feat["spread_vol_60"] = spread_ret.rolling(60).std()
-    feat["beta"] = beta
-    feat["spread"] = spread
-
-    future_spread = spread.shift(-horizon)
-    dist_now = (spread - spread_mean).abs()
-    dist_future = (future_spread - spread_mean).abs()
-    feat["y"] = (dist_future < dist_now).astype(int)
-
-    return feat.dropna()
+from model_pipeline import FEATURE_COLS, build_features as build_pair_features
+from paper_trading import CAPITAL_PER_PAIR as CAPITAL_PER_PAIR_DASHBOARD
 
 
 prices = load_csv("nifty_prices_clean.csv")
@@ -248,14 +242,23 @@ ml_stats = load_table("ml_vs_baseline_stats.csv")
 ml_trade = load_csv("ml_trade_series.csv")
 live_pred = load_table("live_prediction.csv")
 pair_registry = load_model_table("pair_model_registry.csv")
+walk_forward_stats = load_table("walk_forward_stats.csv")
+walk_forward_equity = load_table("walk_forward_equity.csv")
+paper_positions = load_table("paper_trading_positions.csv")
+paper_trades = load_table("paper_trading_trades.csv")
+paper_equity = load_table("paper_trading_equity.csv")
 
+
+best_meta = load_model_json("rf_pair_model_meta.json")
 
 st.markdown(
-    """
+    f"""
     <div class="hero">
-      <h1 style="margin:0;">Pair Trading Intelligence Dashboard</h1>
-      <p style="margin:8px 0 0 0; opacity:0.95;">
-        Cointegration-based statistical arbitrage on Indian equities with baseline strategy and ML trade filter.
+      <div class="eyebrow">Spread &amp; Signal &middot; NSE Statistical Arbitrage</div>
+      <h1>Pair Trading Intelligence Dashboard</h1>
+      <p class="sub">
+        Cointegration-based statistical arbitrage on Indian equities &mdash; screening, a Random Forest trade filter,
+        a realistic NSE cost &amp; risk model, walk-forward validation, and a live paper-trading ledger, in one view.
       </p>
     </div>
     """,
@@ -265,6 +268,14 @@ st.markdown(
 if prices.empty:
     st.error("Missing data/nifty_prices_clean.csv. Run the notebooks first.")
     st.stop()
+
+if best_meta:
+    st.caption(
+        f"Top-ranked model (by validation F1): **{best_meta.get('stock_a', '?')} vs {best_meta.get('stock_b', '?')}** "
+        f"&middot; validation F1 {float(best_meta.get('validation_f1', 0)):.3f} "
+        f"&middot; test ROC-AUC {float(best_meta.get('test_roc_auc', 0)):.3f} "
+        f"&middot; as of {best_meta.get('dataset_last_date', 'n/a')}"
+    )
 
 st.sidebar.header("Controls")
 sector_option = st.sidebar.selectbox(
@@ -409,25 +420,19 @@ if not live_pred.empty:
     live_thr = float(row_live.get("threshold", np.nan))
 
     if live_action == "LONG_SPREAD":
-        action_color = "#166534"
-        action_bg = "#dcfce7"
-        action_text = "LONG SPREAD"
+        pill_class, action_text = "long", "LONG SPREAD"
     elif live_action == "SHORT_SPREAD":
-        action_color = "#9f1239"
-        action_bg = "#ffe4e6"
-        action_text = "SHORT SPREAD"
+        pill_class, action_text = "short", "SHORT SPREAD"
     else:
-        action_color = "#1e293b"
-        action_bg = "#e2e8f0"
-        action_text = "NO TRADE"
+        pill_class, action_text = "flat", "NO TRADE"
 
     st.markdown(
         f"""
-        <div style=\"background:#ffffff;border:1px solid rgba(148,163,184,0.25);border-radius:14px;padding:14px 16px;\">
-            <div style=\"font-size:13px;color:#334155;\">As of {live_date} | Pair: {live_pair}</div>
-            <div style=\"margin-top:8px;display:inline-block;padding:6px 12px;border-radius:999px;background:{action_bg};color:{action_color};font-weight:700;\">{action_text}</div>
-            <div style=\"margin-top:10px;font-size:13px;color:#0f172a;\">RF confidence: {live_prob:.3f} (threshold {live_thr:.2f}) | Current Z-score: {live_z:.3f}</div>
-            <div style=\"margin-top:6px;font-size:13px;color:#475569;\">Baseline signal: {baseline_action}. Final action is after ML filter.</div>
+        <div class="section-card">
+            <div class="mono" style="font-size:13px;">As of {live_date} &nbsp;&middot;&nbsp; Pair: {live_pair}</div>
+            <div style="margin-top:10px;"><span class="pill {pill_class}">{action_text}</span></div>
+            <div style="margin-top:10px;font-size:13px;color:var(--ink);">RF confidence: <b>{live_prob:.3f}</b> (threshold {live_thr:.2f}) &nbsp;&middot;&nbsp; Current Z-score: <b>{live_z:.3f}</b></div>
+            <div style="margin-top:6px;font-size:13px;color:var(--muted);">Baseline signal: {baseline_action}. Final action is after the ML filter.</div>
         </div>
         """,
         unsafe_allow_html=True,
@@ -444,14 +449,16 @@ sector_map = {
 }
 sector_df = sector_map.get(sector_option, pd.DataFrame())
 
-tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs(
+tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8 = st.tabs(
     [
-        "Market Structure",
-        "Pairs and Cointegration",
-        "Strategy Performance",
-        "Timeline Model",
-        "Outcome Story",
-        "Presentation Assets",
+        "📈 Market Structure",
+        "🔗 Pairs & Cointegration",
+        "⚖️ Strategy Performance",
+        "🕒 Timeline Model",
+        "📝 Outcome Story",
+        "🖼️ Presentation Assets",
+        "🧪 Walk-Forward Validation",
+        "📒 Live Paper Trading",
     ]
 )
 
@@ -694,6 +701,28 @@ with tab3:
     else:
         st.info("ml_trade_series.csv not available or missing required columns.")
 
+    st.markdown("---")
+    st.markdown("### Flat-cost backtest vs. realistic-cost walk-forward")
+    explain_block(
+        "Compares the numbers above (flat 10bps-per-turnover, unlimited position size) against the "
+        "walk-forward result under costs.py's realistic Indian cash-equity cost model (STT, exchange/SEBI "
+        "charges, stamp duty, GST, SLB short-borrow cost, volatility-scaled slippage) and risk.py's "
+        "volatility-targeted position sizing with a z-score blowout / time stop.",
+        "A strategy that only looks good under a flat 10bps assumption is not evidence of a real edge.",
+        "If Sharpe/CAGR survive under realistic costs, that is much stronger evidence for the paper than the "
+        "flat-cost baseline alone.",
+    )
+    if walk_forward_stats.empty:
+        st.warning("walk_forward_stats.csv not found. Run walk_forward.py first.")
+    else:
+        agg = walk_forward_stats[walk_forward_stats["fold"] == "ALL"]
+        st.dataframe(agg, width="stretch")
+        portfolio_row = agg[agg["pair"] == "PORTFOLIO"]
+        if not portfolio_row.empty and base_sharpe is not None:
+            wf_sharpe = float(portfolio_row.iloc[0]["Sharpe"])
+            delta = wf_sharpe - base_sharpe
+            st.metric("Walk-forward portfolio Sharpe (realistic costs)", f"{wf_sharpe:.2f}", delta=f"{delta:.2f} vs flat-cost baseline")
+
 with tab4:
     st.subheader("Timeline Model")
     explain_block(
@@ -705,7 +734,20 @@ with tab4:
     if pair_registry.empty:
         st.warning("Pair model registry not found. Run model_pipeline.py first.")
     else:
-        feature_cols = ["z", "z_chg_5", "z_chg_20", "corr_30", "spread_vol_20", "spread_vol_60"]
+        with st.expander("Full pair model registry (all trained models, raw metrics)"):
+            registry_cols = [
+                c
+                for c in [
+                    "model_name", "stock_a", "stock_b", "beta_static", "threshold",
+                    "final_action", "live_probability", "live_zscore",
+                    "validation_f1", "validation_roc_auc", "test_f1", "test_roc_auc",
+                    "dataset_last_date",
+                ]
+                if c in pair_registry.columns
+            ]
+            st.dataframe(pair_registry[registry_cols], width="stretch")
+
+        feature_cols = FEATURE_COLS
         scored_rows: list[dict[str, object]] = []
         window_start_buffer = analysis_start - pd.Timedelta(days=420)
         past_window = analysis_end <= pd.Timestamp(prices.index.max())
@@ -785,29 +827,28 @@ with tab4:
             )
             best = scored_df.iloc[0]
 
-            action_bg = "#e2e8f0"
-            action_fg = "#1e293b"
+            pill_class = "flat"
             if str(best.latest_action) == "LONG_SPREAD":
-                action_bg = "#dcfce7"
-                action_fg = "#166534"
+                pill_class = "long"
             elif str(best.latest_action) == "SHORT_SPREAD":
-                action_bg = "#ffe4e6"
-                action_fg = "#9f1239"
+                pill_class = "short"
 
             st.markdown(
                 f"""
-                <div style=\"background:#ffffff;border:1px solid rgba(148,163,184,0.25);border-radius:14px;padding:14px 16px;margin-bottom:12px;\">
-                    <div style=\"font-size:13px;color:#475569;\">Timeline summary for <b>{analysis_label}</b></div>
-                    <div style=\"margin-top:8px;font-size:18px;color:#0f172a;font-weight:700;\">Best Pair: {best.stock_a} vs {best.stock_b}</div>
-                    <div style=\"margin-top:8px;display:inline-block;padding:6px 12px;border-radius:999px;background:{action_bg};color:{action_fg};font-weight:700;\">Recommended Action: {best.latest_action}</div>
-                    <div style=\"margin-top:8px;font-size:13px;color:#334155;\">Model score: {best.model_score:.3f} | Validation F1: {best.validation_f1:.3f} | Avg RF prob: {best.mean_probability:.3f}</div>
+                <div class="section-card">
+                    <div class="mono" style="font-size:13px;">Timeline summary for <b>{analysis_label}</b></div>
+                    <div style="margin-top:8px;font-size:19px;color:var(--ink);font-weight:700;">Best Pair: {best.stock_a} vs {best.stock_b}</div>
+                    <div style="margin-top:8px;"><span class="pill {pill_class}">Recommended: {best.latest_action}</span></div>
+                    <div style="margin-top:10px;font-size:13px;color:var(--muted);">Model score: <b>{best.model_score:.3f}</b> &nbsp;&middot;&nbsp; Validation F1: <b>{best.validation_f1:.3f}</b> &nbsp;&middot;&nbsp; Avg RF prob: <b>{best.mean_probability:.3f}</b></div>
                 </div>
                 """,
                 unsafe_allow_html=True,
             )
 
-            c1, c2, c3, c4 = st.columns(4)
-            c1.metric("Best pair", f"{best.stock_a} vs {best.stock_b}")
+            c1, c2, c3, c4 = st.columns([1.6, 1, 1, 1])
+            short_a = str(best.stock_a).replace(".NS", "")
+            short_b = str(best.stock_b).replace(".NS", "")
+            c1.metric("Best pair", f"{short_a}/{short_b}")
             c2.metric("Best action", str(best.latest_action))
             c3.metric("Model score", f"{best.model_score:.3f}")
             c4.metric("Avg RF prob", f"{best.mean_probability:.3f}")
@@ -912,24 +953,15 @@ with tab4:
                     pnl_col2.metric("Baseline return", f"{base_return:.2%}")
                     pnl_col3.metric("Return delta", f"{(model_return - base_return):.2%}")
 
-                    pnl_bg = "#e2e8f0"
-                    pnl_fg = "#1e293b"
+                    pnl_class = "flat"
                     pnl_text = "BREAKEVEN"
                     if model_return > 0:
-                        pnl_bg = "#dcfce7"
-                        pnl_fg = "#166534"
-                        pnl_text = "PROFIT"
+                        pnl_class, pnl_text = "long", "PROFIT"
                     elif model_return < 0:
-                        pnl_bg = "#ffe4e6"
-                        pnl_fg = "#9f1239"
-                        pnl_text = "LOSS"
+                        pnl_class, pnl_text = "short", "LOSS"
 
                     st.markdown(
-                        f"""
-                        <div style=\"display:inline-block;padding:7px 14px;border-radius:999px;background:{pnl_bg};color:{pnl_fg};font-weight:700;\">
-                            Window Result: {pnl_text}
-                        </div>
-                        """,
+                        f'<span class="pill {pnl_class}">Window Result: {pnl_text}</span>',
                         unsafe_allow_html=True,
                     )
 
@@ -1109,6 +1141,93 @@ with tab6:
                         mime="text/csv",
                         width="stretch",
                     )
+
+with tab7:
+    st.subheader("Walk-forward validation (out-of-sample, realistic costs)")
+    explain_block(
+        "Every fold retrains the model on an expanding historical window and evaluates strictly on the "
+        "next unseen block, then chains all out-of-sample blocks into one continuous equity curve.",
+        "A single static train/valid/test split (used elsewhere in this app) is weak evidence of a real "
+        "edge -- walk-forward is the standard way to show a strategy isn't just fit to one lucky window.",
+        "Compare per-fold Sharpe/CAGR/MaxDD for consistency across time, and look at the chained portfolio "
+        "equity curve for the overall out-of-sample track record.",
+    )
+
+    if walk_forward_stats.empty or walk_forward_equity.empty:
+        st.warning("walk_forward_stats.csv / walk_forward_equity.csv not found. Run walk_forward.py first.")
+    else:
+        fold_stats = walk_forward_stats[walk_forward_stats["fold"] != "ALL"]
+        st.write("Per-fold metrics")
+        st.dataframe(fold_stats, width="stretch")
+
+        st.write("Aggregate metrics (all folds chained)")
+        st.dataframe(walk_forward_stats[walk_forward_stats["fold"] == "ALL"], width="stretch")
+
+        portfolio_curve = walk_forward_equity[walk_forward_equity["pair"] == "PORTFOLIO"].copy()
+        if not portfolio_curve.empty:
+            portfolio_curve["date"] = pd.to_datetime(portfolio_curve["date"])
+            fig_wf = go.Figure()
+            fig_wf.add_trace(
+                go.Scatter(x=portfolio_curve["date"], y=portfolio_curve["equity"], name="Walk-forward portfolio equity", line=dict(color="#0f766e", width=3))
+            )
+            fig_wf.update_layout(title="Chained out-of-sample portfolio equity curve", template="plotly_white", height=480, xaxis_title="Date", yaxis_title="Equity")
+            st.plotly_chart(fig_wf, width="stretch")
+
+        pair_options = [p for p in walk_forward_equity["pair"].unique() if p != "PORTFOLIO"]
+        if pair_options:
+            wf_pair = st.selectbox("Inspect one pair's walk-forward equity", pair_options, key="wf_pair_select")
+            pair_curve = walk_forward_equity[walk_forward_equity["pair"] == wf_pair].copy()
+            pair_curve["date"] = pd.to_datetime(pair_curve["date"])
+            fig_pair_wf = go.Figure()
+            fig_pair_wf.add_trace(go.Scatter(x=pair_curve["date"], y=pair_curve["equity"], name=wf_pair, line=dict(color="#334155")))
+            for fold_id in pair_curve["fold"].unique():
+                fold_start = pair_curve[pair_curve["fold"] == fold_id]["date"].min()
+                fig_pair_wf.add_vline(x=fold_start, line_dash="dot", line_color="#94a3b8")
+            fig_pair_wf.update_layout(title=f"{wf_pair}: walk-forward equity (dotted lines = fold boundaries)", template="plotly_white", height=420, xaxis_title="Date", yaxis_title="Equity")
+            st.plotly_chart(fig_pair_wf, width="stretch")
+
+with tab8:
+    st.subheader("Live paper trading (forward test, no broker required)")
+    explain_block(
+        "An accumulating day-by-day ledger: each day paper_trading.py evaluates every pair's trained model "
+        "against that day's real closing prices and logs what the strategy would have done, under the same "
+        "realistic cost and risk-sizing model as the walk-forward backtest.",
+        "This is genuine out-of-sample forward-test evidence -- generated after the model was trained, not "
+        "backtested on history the model could have learned from. Strong evidence for a research paper.",
+        "Run `python paper_trading.py` daily (see the scheduling command in its module docstring) to build "
+        "up this track record over time.",
+    )
+
+    if paper_equity.empty:
+        st.warning("No paper-trading history yet. Run `python paper_trading.py` to start the ledger.")
+    else:
+        equity_wide = paper_equity.copy()
+        equity_wide["date"] = pd.to_datetime(equity_wide["date"])
+        portfolio_daily = equity_wide.groupby("date")["pnl"].sum().sort_index()
+        portfolio_equity_curve = portfolio_daily.cumsum() + CAPITAL_PER_PAIR_DASHBOARD * equity_wide["pair"].nunique()
+
+        c_pt1, c_pt2, c_pt3 = st.columns(3)
+        c_pt1.metric("Trading days logged", f"{portfolio_daily.shape[0]}")
+        c_pt2.metric("Portfolio equity", f"{portfolio_equity_curve.iloc[-1]:,.0f}")
+        c_pt3.metric("Cumulative P&L", f"{portfolio_daily.sum():,.0f}")
+
+        fig_paper = go.Figure()
+        fig_paper.add_trace(go.Scatter(x=portfolio_equity_curve.index, y=portfolio_equity_curve.values, name="Paper-trading portfolio equity", line=dict(color="#ea580c", width=3)))
+        fig_paper.update_layout(title="Live paper-trading equity curve", template="plotly_white", height=460, xaxis_title="Date", yaxis_title="Equity")
+        st.plotly_chart(fig_paper, width="stretch")
+
+        st.write("Current open positions")
+        if not paper_positions.empty:
+            open_pos = paper_positions[paper_positions["direction"] != 0]
+            st.dataframe(open_pos if not open_pos.empty else paper_positions, width="stretch")
+        else:
+            st.info("No positions file yet.")
+
+        st.write("Closed-trade log")
+        if not paper_trades.empty:
+            st.dataframe(paper_trades, width="stretch")
+        else:
+            st.info("No closed trades logged yet.")
 
 st.sidebar.markdown("---")
 st.sidebar.success("Dashboard is live.")

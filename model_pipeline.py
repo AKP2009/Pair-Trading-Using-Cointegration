@@ -7,9 +7,11 @@ from datetime import timedelta
 import joblib
 import numpy as np
 import pandas as pd
+import statsmodels.api as sm
 import yfinance as yf
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score, roc_auc_score
+from statsmodels.regression.recursive_ls import RecursiveLS
 
 
 ROOT = Path(__file__).resolve().parent
@@ -18,6 +20,79 @@ MODEL_DIR = ROOT / "models"
 MODEL_BANK_DIR = MODEL_DIR / "pair_models"
 MODEL_DIR.mkdir(parents=True, exist_ok=True)
 MODEL_BANK_DIR.mkdir(parents=True, exist_ok=True)
+
+
+FEATURE_COLS = [
+    "z",
+    "z_chg_5",
+    "z_chg_20",
+    "corr_30",
+    "spread_vol_20",
+    "spread_vol_60",
+    "half_life",
+    "hurst",
+    "beta_dev",
+]
+
+
+def compute_kalman_beta(price_a: pd.Series, price_b: pd.Series, burn_in: int = 30) -> pd.Series:
+    """
+    Adaptive hedge ratio via recursive least squares (Kalman-filter style),
+    in contrast to the fixed-window rolling-OLS beta. Early estimates are
+    unstable before the filter has enough observations, so the first
+    `burn_in` values are set to NaN.
+    """
+    exog = sm.add_constant(price_b.to_numpy())
+    model = RecursiveLS(price_a.to_numpy(), exog)
+    res = model.fit()
+    beta_path = res.recursive_coefficients.filtered[1]
+    beta_series = pd.Series(beta_path, index=price_a.index)
+    beta_series.iloc[:burn_in] = np.nan
+    return beta_series
+
+
+def compute_half_life(spread: pd.Series, window: int = 60, non_reverting_sentinel: float = 500.0) -> pd.Series:
+    """
+    Rolling half-life of mean reversion via OLS AR(1) on the spread:
+    delta_spread_t = a + b * spread_{t-1}. half_life = -ln(2) / b.
+
+    Non-mean-reverting windows (b >= 0) get a large sentinel value rather
+    than NaN -- a real "currently not reverting" reading, not a missing
+    value. True NaN is reserved for windows without enough data yet, so a
+    single non-reverting window near the end of the series doesn't wipe
+    out that day's row for live signal generation (build_features ends
+    with a blanket dropna()).
+    """
+    lagged = spread.shift(1)
+    delta = spread.diff()
+    b = delta.rolling(window).cov(lagged) / lagged.rolling(window).var()
+    b = b.replace([np.inf, -np.inf], np.nan)
+    with np.errstate(divide="ignore", invalid="ignore"):
+        half_life_raw = -np.log(2) / b
+    half_life = pd.Series(
+        np.where(b.isna(), np.nan, np.where(b < 0, half_life_raw, non_reverting_sentinel)),
+        index=spread.index,
+    )
+    return half_life.clip(upper=non_reverting_sentinel)
+
+
+def _hurst_rs(x: np.ndarray) -> float:
+    """Simplified single-window rescaled-range (R/S) proxy for the Hurst exponent."""
+    n = len(x)
+    if n < 20:
+        return np.nan
+    y = x - x.mean()
+    z = np.cumsum(y)
+    r = z.max() - z.min()
+    s = x.std()
+    if s == 0 or r == 0:
+        return np.nan
+    return float(np.log(r / s) / np.log(n))
+
+
+def compute_hurst(spread: pd.Series, window: int = 100) -> pd.Series:
+    """Rolling simplified Hurst exponent of the spread (< 0.5 hints at mean reversion)."""
+    return spread.rolling(window).apply(_hurst_rs, raw=True)
 
 
 def build_features(
@@ -42,6 +117,8 @@ def build_features(
     ret_b = prices[stock_b].pct_change()
     spread_ret = ret_a - beta * ret_b
 
+    beta_kalman = compute_kalman_beta(prices[stock_a], prices[stock_b])
+
     feat = pd.DataFrame(index=prices.index)
     feat["z"] = z
     feat["z_chg_5"] = z - z.shift(5)
@@ -49,6 +126,10 @@ def build_features(
     feat["corr_30"] = prices[stock_a].rolling(30).corr(prices[stock_b])
     feat["spread_vol_20"] = spread_ret.rolling(20).std()
     feat["spread_vol_60"] = spread_ret.rolling(60).std()
+    feat["half_life"] = compute_half_life(spread)
+    feat["hurst"] = compute_hurst(spread)
+    feat["beta_kalman"] = beta_kalman
+    feat["beta_dev"] = beta_kalman - beta_static
     feat["beta"] = beta
     feat["spread"] = spread
 
@@ -138,6 +219,17 @@ def pair_slug(stock_a: str, stock_b: str) -> str:
     return f"{stock_a.replace('.NS', '')}__{stock_b.replace('.NS', '')}".replace("-", "_")
 
 
+def make_rf_model() -> RandomForestClassifier:
+    """Shared RF construction so model_pipeline.py and walk_forward.py train identically configured models."""
+    return RandomForestClassifier(
+        n_estimators=400,
+        max_depth=7,
+        min_samples_leaf=15,
+        random_state=42,
+        class_weight="balanced_subsample",
+    )
+
+
 def train_one_pair(
     prices: pd.DataFrame,
     pair_row: pd.Series,
@@ -148,7 +240,7 @@ def train_one_pair(
     beta_static = float(pair_row["beta_a_on_b"])
 
     dataset = build_features(prices, stock_a, stock_b, beta_static)
-    feature_cols = ["z", "z_chg_5", "z_chg_20", "corr_30", "spread_vol_20", "spread_vol_60"]
+    feature_cols = FEATURE_COLS
     train_df, valid_df, test_df = split_data(dataset)
 
     if train_df.empty or valid_df.empty or test_df.empty:
@@ -158,13 +250,7 @@ def train_one_pair(
     X_valid, y_valid = valid_df[feature_cols], valid_df["y"]
     X_test, y_test = test_df[feature_cols], test_df["y"]
 
-    model = RandomForestClassifier(
-        n_estimators=400,
-        max_depth=7,
-        min_samples_leaf=15,
-        random_state=42,
-        class_weight="balanced_subsample",
-    )
+    model = make_rf_model()
     model.fit(X_train, y_train)
 
     valid_prob = model.predict_proba(X_valid)[:, 1]
