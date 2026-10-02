@@ -22,12 +22,12 @@
 
 ```mermaid
 flowchart TD
-    A[📈 01. Data Collection\nYahoo Finance / Nifty 50] --> B[🔍 02. EDA & Stationarity\nADF Test & Price Ratio Analysis]
-    B --> C[🎯 03. Pair Selection\nEngle-Granger & Johansen Cointegration]
-    C --> D[⚡ 04. Signal Backtest\nZ-score Mean Reversion]
-    D --> E[🤖 05. ML Filtering\nRandom Forest Regime & Quality Filter]
-    E --> F[🖥️ 06. Streamlit Dashboard\nInteractive Analytics & Live Monitoring]
-    E --> G[🔄 Walk-Forward & Paper Trading\nOut-of-Sample Validation]
+    A["📈 01. Data Collection<br/>Yahoo Finance / Nifty 50"] --> B["🔍 02. EDA & Stationarity<br/>ADF Test & Price Ratio Analysis"]
+    B --> C["🎯 03. Pair Selection<br/>Engle-Granger & Johansen Cointegration"]
+    C --> D["⚡ 04. Signal Backtest<br/>Z-score Mean Reversion"]
+    D --> E["🤖 05. ML Filtering<br/>Random Forest Regime & Quality Filter"]
+    E --> F["🖥️ 06. Streamlit Dashboard<br/>Interactive Analytics & Live Monitoring"]
+    E --> G["🔄 Walk-Forward & Paper Trading<br/>Out-of-Sample Validation"]
 ```
 
 ### 🧠 Core Algorithmic Components
@@ -35,19 +35,19 @@ flowchart TD
 ```mermaid
 graph LR
     subgraph Signal Generation
-        A1[Price Ratio / Spread] --> A2[Z-Score Calculation]
-        A2 --> A3[Entry: |Z| > Threshold\nExit: |Z| < Exit Level]
+        A1["Price Ratio / Spread"] --> A2["Z-Score Calculation"]
+        A2 --> A3["Entry: |Z| > Threshold<br/>Exit: |Z| < Exit Level"]
     end
 
     subgraph Machine Learning Quality Filter
-        B1[Market Regime Features\nVolatility, ADX, Spread Dist] --> B2[Random Forest Classifier]
-        B2 --> B3{Quality Score > Threshold?}
+        B1["Market Regime Features<br/>Volatility, ADX, Spread Dist"] --> B2["Random Forest Classifier"]
+        B2 --> B3{"Quality Score > Threshold?"}
     end
 
-    A3 --> C{Filter Passed?}
+    A3 --> C{"Filter Passed?"}
     B3 --> C
-    C -- Yes --> D[Execute Trade with Risk & Cost Controls]
-    C -- No --> E[Suppress False Signal]
+    C -- Yes --> D["Execute Trade with Risk & Cost Controls"]
+    C -- No --> E["Suppress False Signal"]
 ```
 
 ---
