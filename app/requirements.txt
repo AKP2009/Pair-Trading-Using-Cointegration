@@ -1,0 +1,7 @@
+# Dashboard-only dependencies (Streamlit Community Cloud reads this file because it sits next to
+# app/streamlit_app.py). The research pipeline needs the full ../requirements.txt instead.
+streamlit==1.56.0
+pandas==3.0.2
+numpy==2.4.4
+plotly==6.7.0
+pyarrow==23.0.1

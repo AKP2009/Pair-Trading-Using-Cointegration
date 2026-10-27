@@ -151,6 +151,28 @@ Upon completing all notebook runs, verify that the following core files exist:
 
 ---
 
+## 🖥️ Project Dashboard (`app/`)
+
+A Streamlit app that presents the whole project for demonstration: the final result vs the Nifty 200 TRI,
+how the model works step by step, the point-in-time universe, the regime engine, every pair and trade,
+a pair explorer, a live signal monitor, and the full research journey (Phase 1 and Phase 2) with its
+failures and limitations.
+
+```powershell
+.\.venv\Scripts\python.exe app\build_data.py               # re-export the dashboard bundle (only after re-running the research)
+.\.venv\Scripts\python.exe -m streamlit run app\streamlit_app.py
+```
+
+`app/build_data.py` re-runs the frozen final configuration, checks it reproduces
+`research/pit_pairs/full_equity.csv` exactly, and writes the pair schedule, trade log and regime
+series to `app/data/`. The app itself needs only `app/requirements.txt` (Streamlit, pandas, NumPy,
+Plotly, PyArrow).
+
+**Deploy on Streamlit Community Cloud:** create an app from this repository, branch `master`,
+main file path `app/streamlit_app.py`, Python 3.12.
+
+---
+
 ## 🧭 Nifty 200 Regime-Aware Relative-Strength Pairs (research pipeline)
 
 A second, script-based pipeline extends the project from the 22-stock Nifty 50 sector set to the full
