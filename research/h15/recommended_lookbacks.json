@@ -1,0 +1,60 @@
+{
+  "trained_on": [
+    "2023-10-23",
+    "2026-10-23"
+  ],
+  "holding_period": "15 calendar days",
+  "models": [
+    {
+      "lookback": 15,
+      "vol_window": 20,
+      "formation_days": 756,
+      "entry_k": 1.0,
+      "max_vol_ratio": null,
+      "train_sharpe": 0.4627350021616253
+    },
+    {
+      "lookback": 10,
+      "vol_window": 20,
+      "formation_days": 756,
+      "entry_k": 1.0,
+      "max_vol_ratio": null,
+      "train_sharpe": 0.8251650529844896
+    },
+    {
+      "lookback": 15,
+      "vol_window": 20,
+      "formation_days": 756,
+      "entry_k": 1.5,
+      "max_vol_ratio": null,
+      "train_sharpe": 1.0910590267312512
+    },
+    {
+      "lookback": 10,
+      "vol_window": 20,
+      "formation_days": 756,
+      "entry_k": 1.5,
+      "max_vol_ratio": null,
+      "train_sharpe": 1.1284169486802802
+    },
+    {
+      "lookback": 5,
+      "vol_window": 60,
+      "formation_days": 756,
+      "entry_k": 1.5,
+      "max_vol_ratio": null,
+      "train_sharpe": 0.16276708364533232
+    }
+  ],
+  "regime_lookbacks": {
+    "ema_trend": 50,
+    "adr_window": 5,
+    "ema_breadth": 200,
+    "rv_window": 60,
+    "pct_window": 504
+  },
+  "blocked_regimes": [
+    "BEARISH",
+    "LOW_VOL"
+  ]
+}

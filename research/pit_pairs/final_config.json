@@ -1,0 +1,81 @@
+{
+  "regime": {
+    "pct_window": 756,
+    "bull": 0.55,
+    "bear": 0.45,
+    "high_vol": 0.9,
+    "low_vol": 0.15,
+    "confirm": 1
+  },
+  "factors": {
+    "direction": [
+      "ad_ratio_10",
+      "er_signed_20",
+      "net_highs_252",
+      "roc_63"
+    ],
+    "volatility": [
+      "vix",
+      "avgabs_14",
+      "dispersion_20"
+    ]
+  },
+  "pair_mode": "all but LOW_VOL",
+  "pair_params": {
+    "signal": "rs_pct",
+    "lookback": "20",
+    "pct_window": "126",
+    "entry_pct": 0.9,
+    "exit_on_median": "True",
+    "formation_days": "756"
+  },
+  "benchmark": "approximation: price index + 1.5%/yr dividends reinvested",
+  "missing_history": [
+    "ABIRLANUVO",
+    "ALBK",
+    "ALSTOMT&D",
+    "AMTEKAUTO",
+    "ANDHRABANK",
+    "BHARATFIN",
+    "BHUSANSTL",
+    "CAIRN",
+    "CENTURYTEX",
+    "CMC",
+    "COX&KINGS",
+    "DENABANK",
+    "DHANI",
+    "DHFL",
+    "FINANTECH",
+    "GDL",
+    "GITANJALI",
+    "GRUH",
+    "GSKCONS",
+    "GUJFLUORO",
+    "GUJGASLTD",
+    "HDFC",
+    "HEXAWARE",
+    "IBREALEST",
+    "IDFC",
+    "INGVYSYABK",
+    "ISEC",
+    "JPASSOCIAT",
+    "KPIT",
+    "MINDTREE",
+    "OPTOCIRCUI",
+    "ORIENTBANK",
+    "PEL",
+    "PIPAVAVDOC",
+    "PUNJLLOYD",
+    "RANBAXY",
+    "RELCAPITAL",
+    "SHRIRAMCIT",
+    "SINTEX",
+    "SKSMICRO",
+    "SSLT",
+    "SYNDIBANK",
+    "TATAMTRDVR",
+    "TV18BRDCST",
+    "VIDEOIND",
+    "VIJAYABANK"
+  ]
+}

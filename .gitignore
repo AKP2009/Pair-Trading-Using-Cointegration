@@ -3,3 +3,5 @@ __pycache__/
 .venv/
 .claude/
 .streamlit/secrets.toml
+research/*.pkl
+research/h15/*.pkl

@@ -1,0 +1,40 @@
+{
+  "252": {
+    "direction": [
+      "er_signed_20",
+      "net_highs_252",
+      "ad_ratio_10",
+      "roc_63"
+    ],
+    "volatility": [
+      "vix",
+      "rv_20",
+      "dispersion_20"
+    ]
+  },
+  "504": {
+    "direction": [
+      "er_signed_20",
+      "net_highs_252",
+      "ad_ratio_10"
+    ],
+    "volatility": [
+      "vix",
+      "rv_20",
+      "dispersion_20"
+    ]
+  },
+  "756": {
+    "direction": [
+      "er_signed_20",
+      "ad_ratio_10",
+      "net_highs_252",
+      "roc_63"
+    ],
+    "volatility": [
+      "vix",
+      "avgabs_14",
+      "dispersion_20"
+    ]
+  }
+}

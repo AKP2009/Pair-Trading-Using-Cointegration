@@ -1,0 +1,14 @@
+factor,group,rank_ic,target
+dist_ema21,trend,0.05183145865347071,fwd 20d return
+dist_ema50,trend,0.038349394389919265,fwd 20d return
+dist_ema200,trend,-0.03051415197906767,fwd 20d return
+er_signed_20,trend,0.06348168294343123,fwd 20d return
+roc_63,trend,0.02923069129027101,fwd 20d return
+pct_above_200ema,breadth,-0.011224460163043157,fwd 20d return
+pct_above_50ema,breadth,0.03749719840623307,fwd 20d return
+ad_ratio_10,breadth,0.06336415134153668,fwd 20d return
+net_highs_252,breadth,0.04522763522232276,fwd 20d return
+vix,volatility,0.5624878599912949,fwd 20d realized vol
+rv_20,volatility,0.4885328374017991,fwd 20d realized vol
+avgabs_14,volatility,0.45462746246798325,fwd 20d realized vol
+dispersion_20,volatility,0.29509825202562373,fwd 20d realized vol

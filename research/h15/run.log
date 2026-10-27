@@ -1,0 +1,18 @@
+Running model grid (cached after first run)...
+  formation 252: done
+  formation 504: done
+  formation 756: done
+Model grid: 576 configs; regime grid: 243 definitions
+Traceback (most recent call last):
+  File "C:\projects\Pair-Trading-Project\tune_h15.py", line 388, in <module>
+    main()
+  File "C:\projects\Pair-Trading-Project\tune_h15.py", line 261, in main
+    chosen, info = select_models(rets, trades, lo, hi)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\projects\Pair-Trading-Project\tune_h15.py", line 187, in select_models
+    smooth = {k: neighbour_mean(sh, MODEL_GRID, k) for k in sh}
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\projects\Pair-Trading-Project\tune_h15.py", line 97, in neighbour_mean
+    pos = [dims[d].index(key[d]) for d in range(len(dims))]
+           ^^^^^^^^^^^^^^^^^^^^^
+ValueError: nan is not in list

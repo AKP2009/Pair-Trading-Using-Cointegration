@@ -1,0 +1,47 @@
+{
+  "core": {
+    "lookback": 40,
+    "hold": 10,
+    "entry_k": 1.0,
+    "vol_window": 60,
+    "max_pairs": 5,
+    "pairs_by_regime": null,
+    "max_per_stock": 1,
+    "exit_on_revert": false,
+    "stop_k": null,
+    "max_vol_ratio": null,
+    "direction": "reversion",
+    "cost_model": "futures",
+    "slippage_bps": 5.0,
+    "start": "2014-07-01",
+    "end": "2021-12-31",
+    "label": "",
+    "extra": {}
+  },
+  "chosen_variant": "stock in up to 2 pairs",
+  "final": {
+    "lookback": 40,
+    "hold": 10,
+    "entry_k": 1.0,
+    "vol_window": 60,
+    "max_pairs": 5,
+    "pairs_by_regime": {
+      "BULLISH": 5,
+      "BEARISH": 2,
+      "SIDEWAYS": 5,
+      "LOW_VOL": 2,
+      "HIGH_VOL": 5
+    },
+    "max_per_stock": 2,
+    "exit_on_revert": false,
+    "stop_k": null,
+    "max_vol_ratio": null,
+    "direction": "reversion",
+    "cost_model": "futures",
+    "slippage_bps": 5.0,
+    "start": "2014-07-01",
+    "end": "2021-12-31",
+    "label": "",
+    "extra": {}
+  }
+}

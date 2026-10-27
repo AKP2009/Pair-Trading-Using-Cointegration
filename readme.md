@@ -148,3 +148,49 @@ Upon completing all notebook runs, verify that the following core files exist:
 > [!IMPORTANT]
 > **Missing Downstream Data Files:**  
 > Notebooks must be run sequentially in order. If a file is missing, re-run from Phase 1.
+
+---
+
+## 🧭 Nifty 200 Regime-Aware Relative-Strength Pairs (research pipeline)
+
+A second, script-based pipeline extends the project from the 22-stock Nifty 50 sector set to the full
+**Nifty 200**, with market regimes (trend, breadth, volatility), cointegration pairing, and a
+relative-strength + volatility signal (no z-score, no regression hedge ratio).
+Results and methodology: [research/REPORT.md](research/REPORT.md).
+
+Run from the project root:
+
+```powershell
+.\.venv\Scripts\python.exe universe.py          # Nifty 200 prices, Nifty 200 index, India VIX
+.\.venv\Scripts\python.exe regime.py            # daily regime labels
+.\.venv\Scripts\python.exe pit_pair_system.py   # final strategy: train 2015-2024, test 2025+ vs Nifty 200 TRI
+.\.venv\Scripts\python.exe pit_pair_robustness.py
+.\.venv\Scripts\python.exe report_figures.py
+.\.venv\Scripts\python.exe -m pytest tests -q   # 58 tests
+```
+
+The dashboard picks up the new results automatically as the **Nifty200 Regime Research** page in the sidebar.
+
+| File | Purpose |
+|---|---|
+| universe.py | Downloads Nifty 200 closes, Nifty 200 index, India VIX |
+| regime.py | Bullish / Bearish / Sideways / Low Vol / High Vol regime per day |
+| rs_pairs.py | Cointegration pair formation, RS signal, portfolio backtester, costs |
+| perf.py | Sharpe, Sortino, max drawdown, beta, win rate, yearly / monthly returns |
+| research.py | Static dev (2014-21) / holdout (2022+) study, parameter grid, variants, per-regime runs |
+| walk_forward_rs.py | Walk-forward model selection (final model) |
+| report_figures.py | Charts in research/figures |
+| tune_h15.py | Walk-forward lookback tuning with a fixed 15-calendar-day hold |
+| kaufman_factors.py | Kaufman-style regime factors (Efficiency Ratio, net new highs, ...), percentile normalization, correlation filter |
+| kaufman_system.py | Regime-timed index + pair system, trained on 2015-2024 and tested on 2025+ (research/kaufman/) |
+| rs_lowvol_system.py | RS + low-vol stock selection + regime hedge + pairs, judged against EW buy & hold and the index (research/rs_lowvol/) |
+| tri.py | Nifty 200 TRI loader (official file if saved as data/nifty200_tri.csv) |
+| pit_universe.py | Point-in-time Nifty 200 membership 2013-2026 from NSE constituent archives + review press releases |
+| pit_pair_system.py | **Final strategy**: survivorship-free selection on 2015-2024, single out-of-sample test vs Nifty 200 TRI (research/pit_pairs/) |
+| pit_pair_robustness.py | Cost, benchmark and neighbour robustness checks for the final strategy |
+| final_oos.py | Out-of-sample scorecard of all frozen strategies vs the TRI |
+| tools/parse_nse_*.py | Parsers used to build the point-in-time membership files (need `pip install pdfplumber xlrd`) |
+
+**Final result (research/REPORT.md section 10):** out of sample (2025 to Oct 2026), the frozen point-in-time pair strategy
+returned +6.8% (Sharpe 0.53, vol 7.4%, max DD -7.2%) vs the Nifty 200 TRI's -1.7% (Sharpe 0.00, vol 14.2%, max DD -14.6%).
+Read the caveats there: thin edge, needs futures-level execution costs, weak 2015-2024 training record.

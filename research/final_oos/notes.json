@@ -1,0 +1,13 @@
+{
+  "benchmark": "approximation: price index + 1.5%/yr dividends reinvested",
+  "breakeven_dividend_yield": 0.03004128021802055,
+  "pair_config": {
+    "signal": "rs_pct",
+    "lookback": 5,
+    "pct_window": 126,
+    "entry_pct": 0.9,
+    "exit_on_median": false,
+    "formation_days": 504
+  },
+  "pair_regimes": "pairs in SIDEWAYS + HIGH_VOL"
+}

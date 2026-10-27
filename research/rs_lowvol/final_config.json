@@ -1,0 +1,30 @@
+{
+  "params": {
+    "rs_lookback": 252,
+    "vol_lookback": 252,
+    "w_rs": 0.7,
+    "n_hold": 40,
+    "trend_filter": false,
+    "weighting": "equal",
+    "overlay": "regime",
+    "pairs": true
+  },
+  "buffer": 1.5,
+  "vol_target": 0.12,
+  "pair_config": {
+    "signal": "rs_pct",
+    "lookback": 5,
+    "pct_window": 126,
+    "entry_pct": 0.9,
+    "exit_on_median": false,
+    "formation_days": 504
+  },
+  "regime": {
+    "pct_window": 252,
+    "bull": 0.55,
+    "bear": 0.45,
+    "high_vol": 0.9,
+    "low_vol": 0.25,
+    "confirm": 1
+  }
+}

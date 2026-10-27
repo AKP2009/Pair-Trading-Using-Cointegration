@@ -1,0 +1,8 @@
+PIT universe: 364 stocks with prices; 46 historical members without data
+[stage 1] regime CompositeRegime(pct_window=756, bull=0.55, bear=0.45, high_vol=0.9, low_vol=0.15, confirm=1); factors {'direction': ['ad_ratio_10', 'er_signed_20', 'net_highs_252', 'roc_63'], 'volatility': ['vix', 'avgabs_14', 'dispersion_20']}
+[stage 2] all but LOW_VOL | rs_pct_L20_pw126_e0.9_xTrue_f756 | train Sharpe 0.21, halves 0.10/0.30, max DD -20.6%, trades 1252
+                    period  total_return  sharpe   vol  max_drawdown  tri_total_return  tri_sharpe  tri_vol  tri_maxdd  criteria_met
+OUT-OF-SAMPLE 2025..latest         0.068   0.534 0.074        -0.072            -0.017       0.003    0.142     -0.146             4
+           train 2015-2024         0.138   0.206 0.080        -0.206             2.616       0.877    0.166     -0.381             2
+        train half 2015-19         0.022   0.099 0.072        -0.134             0.568       0.733    0.139     -0.204             2
+        train half 2020-24         0.113   0.296 0.087        -0.206             1.303       0.998    0.188     -0.381             2

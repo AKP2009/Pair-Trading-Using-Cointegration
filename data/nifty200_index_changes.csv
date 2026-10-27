@@ -1,0 +1,162 @@
+effective_date,action,symbol,company,file
+2022-09-30,exclude,APLLTD,Alembic Pharmaceuticals Ltd.,01092022_nsearchives.nseindia.pdf
+2022-09-30,exclude,APOLLOTYRE,Apollo Tyres Ltd.,01092022_nsearchives.nseindia.pdf
+2022-09-30,exclude,EXIDEIND,Exide Industries Ltd.,01092022_nsearchives.nseindia.pdf
+2022-09-30,exclude,GLENMARK,Glenmark Pharmaceuticals Ltd.,01092022_nsearchives.nseindia.pdf
+2022-09-30,exclude,IDBI,IDBI Bank Ltd.,01092022_nsearchives.nseindia.pdf
+2022-09-30,exclude,MANAPPURAM,Manappuram Finance Ltd.,01092022_nsearchives.nseindia.pdf
+2022-09-30,exclude,METROPOLIS,Metropolis Healthcare Ltd.,01092022_nsearchives.nseindia.pdf
+2022-09-30,exclude,MINDTREE,MindTree Ltd.*,01092022_nsearchives.nseindia.pdf
+2022-09-30,include,AWL,Adani Wilmar Ltd.,01092022_nsearchives.nseindia.pdf
+2022-09-30,include,LINDEINDIA,Linde India Ltd.,01092022_nsearchives.nseindia.pdf
+2022-09-30,include,MOTHERSON,Samvardhana Motherson International Ltd.,01092022_nsearchives.nseindia.pdf
+2022-09-30,include,MSUMI,Motherson Sumi Wiring India Ltd.,01092022_nsearchives.nseindia.pdf
+2022-09-30,include,PATANJALI,Patanjali Foods Ltd.,01092022_nsearchives.nseindia.pdf
+2022-09-30,include,POONAWALLA,Poonawalla Fincorp Ltd.,01092022_nsearchives.nseindia.pdf
+2022-09-30,include,TIINDIA,Tube Investments of India Ltd.,01092022_nsearchives.nseindia.pdf
+2022-09-30,include,TTML,Tata Teleservices (Maharashtra) Ltd.,01092022_nsearchives.nseindia.pdf
+2023-09-29,exclude,ABBOTINDIA,Abbott India Ltd.,17082023_nsearchives.nseindia.pdf
+2023-09-29,exclude,HINDZINC,Hindustan Zinc Ltd.,17082023_nsearchives.nseindia.pdf
+2023-09-29,exclude,HONAUT,Honeywell Automation India Ltd.,17082023_nsearchives.nseindia.pdf
+2023-09-29,exclude,OFSS,Oracle Financial Services Software Ltd.,17082023_nsearchives.nseindia.pdf
+2023-09-29,exclude,TRIDENT,Trident Ltd.,17082023_nsearchives.nseindia.pdf
+2023-09-29,exclude,TTML,Tata Teleservices (Maharashtra) Ltd.,17082023_nsearchives.nseindia.pdf
+2023-09-29,exclude,WHIRLPOOL,Whirlpool of India Ltd.,17082023_nsearchives.nseindia.pdf
+2023-09-29,include,APLAPOLLO,APL Apollo Tubes Ltd.,17082023_nsearchives.nseindia.pdf
+2023-09-29,include,BDL,Bharat Dynamics Ltd.,17082023_nsearchives.nseindia.pdf
+2023-09-29,include,FACT,Fertilisers and Chemicals Travancore Ltd.,17082023_nsearchives.nseindia.pdf
+2023-09-29,include,KPITTECH,KPIT Technologies Ltd.,17082023_nsearchives.nseindia.pdf
+2023-09-29,include,LODHA,Macrotech Developers Ltd.,17082023_nsearchives.nseindia.pdf
+2023-09-29,include,MAZDOCK,Mazagoan Dock Shipbuilders Ltd.,17082023_nsearchives.nseindia.pdf
+2023-09-29,include,RVNL,Rail Vikas Nigam Ltd.,17082023_nsearchives.nseindia.pdf
+2023-09-29,include,TATAMTRDVR,Tata Motors Ltd. DVR,17082023_nsearchives.nseindia.pdf
+2024-03-28,exclude,AWL,Adani Wilmar Ltd.,28022024_nsearchives.nseindia.pdf
+2024-03-28,exclude,BATAINDIA,Bata India Ltd.,28022024_nsearchives.nseindia.pdf
+2024-03-28,exclude,COROMANDEL,Coromandel International Ltd.,28022024_nsearchives.nseindia.pdf
+2024-03-28,exclude,CROMPTON,Crompton Greaves Consumer Electricals Ltd.,28022024_nsearchives.nseindia.pdf
+2024-03-28,exclude,DEVYANI,Devyani International Ltd.,28022024_nsearchives.nseindia.pdf
+2024-03-28,exclude,FLUOROCHEM,Gujarat Fluorochemicals Ltd.,28022024_nsearchives.nseindia.pdf
+2024-03-28,exclude,MSUMI,Motherson Sumi Wiring India Ltd.,28022024_nsearchives.nseindia.pdf
+2024-03-28,exclude,MUTHOOTFIN,Muthoot Finance Ltd.,28022024_nsearchives.nseindia.pdf
+2024-03-28,exclude,NAVINFLUOR,Navin Fluorine International Ltd.,28022024_nsearchives.nseindia.pdf
+2024-03-28,exclude,PGHH,Procter & Gamble Hygiene & Health Care Ltd.,28022024_nsearchives.nseindia.pdf
+2024-03-28,exclude,RAMCOCEM,The Ramco Cements Ltd.,28022024_nsearchives.nseindia.pdf
+2024-03-28,exclude,UBL,United Breweries Ltd.,28022024_nsearchives.nseindia.pdf
+2024-03-28,include,GMRINFRA,GMR Airports Infrastructure Ltd.,28022024_nsearchives.nseindia.pdf
+2024-03-28,include,IDBI,IDBI Bank Ltd.,28022024_nsearchives.nseindia.pdf
+2024-03-28,include,IREDA,Indian Renewable Energy Development Agency Ltd.,28022024_nsearchives.nseindia.pdf
+2024-03-28,include,JIOFIN,Jio Financial Services Ltd.,28022024_nsearchives.nseindia.pdf
+2024-03-28,include,JSWINFRA,JSW Infrastructure Ltd.,28022024_nsearchives.nseindia.pdf
+2024-03-28,include,KALYANKJIL,Kalyan Jewellers India Ltd.,28022024_nsearchives.nseindia.pdf
+2024-03-28,include,MAHABANK,Bank of Maharashtra,28022024_nsearchives.nseindia.pdf
+2024-03-28,include,OFSS,Oracle Financial Services Software Ltd.,28022024_nsearchives.nseindia.pdf
+2024-03-28,include,SJVN,SJVN Ltd.,28022024_nsearchives.nseindia.pdf
+2024-03-28,include,SUPREMEIND,Supreme Industries Ltd.,28022024_nsearchives.nseindia.pdf
+2024-03-28,include,SUZLON,Suzlon Energy Ltd.,28022024_nsearchives.nseindia.pdf
+2024-03-28,include,TATATECH,Tata Technologies Ltd.,28022024_nsearchives.nseindia.pdf
+2024-09-30,exclude,BERGEPAINT,Berger Paints India Ltd.,23082024_nsearchives.nseindia.pdf
+2024-09-30,exclude,DALBHARAT,Dalmia Bharat Ltd.,23082024_nsearchives.nseindia.pdf
+2024-09-30,exclude,DEEPAKNTR,Deepak Nitrite Ltd.,23082024_nsearchives.nseindia.pdf
+2024-09-30,exclude,FORTIS,Fortis Healthcare Ltd.,23082024_nsearchives.nseindia.pdf
+2024-09-30,exclude,GLAND,Gland Pharma Ltd.,23082024_nsearchives.nseindia.pdf
+2024-09-30,exclude,GUJGASLTD,Gujarat Gas Ltd.,23082024_nsearchives.nseindia.pdf
+2024-09-30,exclude,IDEA,Vodafone Idea Ltd.,23082024_nsearchives.nseindia.pdf
+2024-09-30,exclude,IPCALAB,Ipca Laboratories Ltd.,23082024_nsearchives.nseindia.pdf
+2024-09-30,exclude,LALPATHLAB,Dr. Lal Path Labs Ltd.,23082024_nsearchives.nseindia.pdf
+2024-09-30,exclude,LAURUSLABS,Laurus Labs Ltd.,23082024_nsearchives.nseindia.pdf
+2024-09-30,exclude,LTTS,L&T Technology Services Ltd.,23082024_nsearchives.nseindia.pdf
+2024-09-30,exclude,PEL,Piramal Enterprises Ltd.,23082024_nsearchives.nseindia.pdf
+2024-09-30,exclude,SUNTV,Sun TV Network Ltd.,23082024_nsearchives.nseindia.pdf
+2024-09-30,exclude,SYNGENE,Syngene International Ltd.,23082024_nsearchives.nseindia.pdf
+2024-09-30,exclude,ZEEL,Zee Entertainment Enterprises Ltd.,23082024_nsearchives.nseindia.pdf
+2024-09-30,include,BHARTIHEXA,Bharti Hexacom Ltd.,23082024_nsearchives.nseindia.pdf
+2024-09-30,include,CENTRALBK,Central Bank of India,23082024_nsearchives.nseindia.pdf
+2024-09-30,include,COCHINSHIP,Cochin Shipyard Ltd.,23082024_nsearchives.nseindia.pdf
+2024-09-30,include,EXIDEIND,Exide Industries Ltd.,23082024_nsearchives.nseindia.pdf
+2024-09-30,include,HINDZINC,Hindustan Zinc Ltd.,23082024_nsearchives.nseindia.pdf
+2024-09-30,include,HUDCO,Housing & Urban Development Corporation Ltd.,23082024_nsearchives.nseindia.pdf
+2024-09-30,include,IOB,Indian Overseas Bank,23082024_nsearchives.nseindia.pdf
+2024-09-30,include,IRB,IRB Infrastructure Developers Ltd.,23082024_nsearchives.nseindia.pdf
+2024-09-30,include,IREDA,Indian Renewable Energy Development Agency Ltd.,23082024_nsearchives.nseindia.pdf
+2024-09-30,include,MRPL,Mangalore Refinery & Petrochemicals Ltd.,23082024_nsearchives.nseindia.pdf
+2024-09-30,include,MUTHOOTFIN,Muthoot Finance Ltd.,23082024_nsearchives.nseindia.pdf
+2024-09-30,include,NLCINDIA,NLC India Ltd.,23082024_nsearchives.nseindia.pdf
+2024-09-30,include,PHOENIXLTD,Phoenix Mills Ltd.,23082024_nsearchives.nseindia.pdf
+2024-09-30,include,SOLARINDS,Solar Industries India Ltd.,23082024_nsearchives.nseindia.pdf
+2024-09-30,include,SUNDARMFIN,Sundaram Finance Ltd.,23082024_nsearchives.nseindia.pdf
+2025-03-28,exclude,BALKRISIND,Balkrishna Industries Ltd.,21022025_nsearchives.nseindia.pdf
+2025-03-28,exclude,DELHIVERY,Delhivery Ltd.,21022025_nsearchives.nseindia.pdf
+2025-03-28,exclude,FACT,Fertilisers and Chemicals Travancore Ltd.,21022025_nsearchives.nseindia.pdf
+2025-03-28,exclude,IDBI,IDBI Bank Ltd.,21022025_nsearchives.nseindia.pdf
+2025-03-28,exclude,IOB,Indian Overseas Bank,21022025_nsearchives.nseindia.pdf
+2025-03-28,exclude,JSWINFRA,JSW Infrastructure Ltd.,21022025_nsearchives.nseindia.pdf
+2025-03-28,exclude,MRPL,Mangalore Refinery & Petrochemicals Ltd.,21022025_nsearchives.nseindia.pdf
+2025-03-28,exclude,NLCINDIA,NLC India Ltd.,21022025_nsearchives.nseindia.pdf
+2025-03-28,exclude,POONAWALLA,Poonawalla Fincorp Ltd.,21022025_nsearchives.nseindia.pdf
+2025-03-28,exclude,SUNDARMFIN,Sundaram Finance Ltd.,21022025_nsearchives.nseindia.pdf
+2025-03-28,exclude,TATACHEM,Tata Chemicals Ltd.,21022025_nsearchives.nseindia.pdf
+2025-03-28,include,BAJAJHFL,Bajaj Housing Finance Ltd.,21022025_nsearchives.nseindia.pdf
+2025-03-28,include,GLENMARK,Glenmark Pharmaceuticals Ltd.,21022025_nsearchives.nseindia.pdf
+2025-03-28,include,HYUNDAI,Hyundai Motor India Ltd.,21022025_nsearchives.nseindia.pdf
+2025-03-28,include,MOTILALOFS,Motilal Oswal Financial Services Ltd.,21022025_nsearchives.nseindia.pdf
+2025-03-28,include,NATIONALUM,National Aluminium Co. Ltd.,21022025_nsearchives.nseindia.pdf
+2025-03-28,include,NTPCGREEN,NTPC Green Energy Ltd.,21022025_nsearchives.nseindia.pdf
+2025-03-28,include,OLAELEC,Ola Electric Mobility Ltd.,21022025_nsearchives.nseindia.pdf
+2025-03-28,include,PREMIERENE,Premier Energies Ltd.,21022025_nsearchives.nseindia.pdf
+2025-03-28,include,SWIGGY,Swiggy Ltd.,21022025_nsearchives.nseindia.pdf
+2025-03-28,include,VMM,Vishal Mega Mart Ltd.,21022025_nsearchives.nseindia.pdf
+2025-03-28,include,WAAREEENER,Waaree Energies Ltd.,21022025_nsearchives.nseindia.pdf
+2025-09-30,exclude,ABFRL,Aditya Birla Fashion and Retail Ltd.,22082025_www.niftyindices.pdf
+2025-09-30,exclude,APOLLOTYRE,Apollo Tyres Ltd.,22082025_www.niftyindices.pdf
+2025-09-30,exclude,BANDHANBNK,Bandhan Bank Ltd.,22082025_www.niftyindices.pdf
+2025-09-30,exclude,ESCORTS,Escorts Kubota Ltd.,22082025_www.niftyindices.pdf
+2025-09-30,exclude,ICICIPRULI,ICICI Prudential Life Insurance Company Ltd.,22082025_www.niftyindices.pdf
+2025-09-30,exclude,MAHABANK,Bank of Maharashtra,22082025_www.niftyindices.pdf
+2025-09-30,exclude,OLAELEC,Ola Electric Mobility Ltd.,22082025_www.niftyindices.pdf
+2025-09-30,exclude,PETRONET,Petronet LNG Ltd.,22082025_www.niftyindices.pdf
+2025-09-30,exclude,SJVN,SJVN Ltd.,22082025_www.niftyindices.pdf
+2025-09-30,include,360ONE,360 ONE WAM Ltd.,22082025_www.niftyindices.pdf
+2025-09-30,include,BLUESTARCO,Blue Star Ltd.,22082025_www.niftyindices.pdf
+2025-09-30,include,COROMANDEL,Coromandel International Ltd.,22082025_www.niftyindices.pdf
+2025-09-30,include,ENRIN,Siemens Energy India Ltd.,22082025_www.niftyindices.pdf
+2025-09-30,include,FORTIS,Fortis Healthcare Ltd.,22082025_www.niftyindices.pdf
+2025-09-30,include,GODFRYPHLP,Godfrey Phillips India Ltd.,22082025_www.niftyindices.pdf
+2025-09-30,include,ITCHOTELS,ITC Hotels Ltd.,22082025_www.niftyindices.pdf
+2025-09-30,include,KEI,KEI Industries Ltd.,22082025_www.niftyindices.pdf
+2025-09-30,include,POWERINDIA,Hitachi Energy India Ltd.,22082025_www.niftyindices.pdf
+2026-03-30,exclude,ACC,ACC Ltd.,23022026_www.niftyindices.pdf
+2026-03-30,exclude,BAJAJHFL,Bajaj Housing Finance Ltd.,23022026_www.niftyindices.pdf
+2026-03-30,exclude,BHARTIHEXA,Bharti Hexacom Ltd.,23022026_www.niftyindices.pdf
+2026-03-30,exclude,IGL,Indraprastha Gas Ltd.,23022026_www.niftyindices.pdf
+2026-03-30,exclude,IRB,IRB Infrastructure Developers Ltd.,23022026_www.niftyindices.pdf
+2026-03-30,exclude,ITCHOTELS,ITC Hotels Ltd.,23022026_www.niftyindices.pdf
+2026-03-30,exclude,LICI,Life Insurance Corporation of India,23022026_www.niftyindices.pdf
+2026-03-30,exclude,NTPCGREEN,NTPC Green Energy Ltd.,23022026_www.niftyindices.pdf
+2026-03-30,exclude,SONACOMS,Sona BLW Precision Forgings Ltd.,23022026_www.niftyindices.pdf
+2026-03-30,exclude,TATATECH,Tata Technologies Ltd.,23022026_www.niftyindices.pdf
+2026-03-30,exclude,TORNTPOWER,Torrent Power Ltd.,23022026_www.niftyindices.pdf
+2026-03-30,include,GROWW,Billionbrains Garage Ventures Ltd.,23022026_www.niftyindices.pdf
+2026-03-30,include,GVT&D,GE Vernova T&D India Ltd.,23022026_www.niftyindices.pdf
+2026-03-30,include,ICICIAMC,ICICI Prudential Asset Management Company Ltd.,23022026_www.niftyindices.pdf
+2026-03-30,include,LAURUSLABS,Laurus Labs Ltd.,23022026_www.niftyindices.pdf
+2026-03-30,include,LENSKART,Lenskart Solutions Ltd.,23022026_www.niftyindices.pdf
+2026-03-30,include,LGEINDIA,LG Electronics India Ltd.,23022026_www.niftyindices.pdf
+2026-03-30,include,MCX,Multi Commodity Exchange of India Ltd.,23022026_www.niftyindices.pdf
+2026-03-30,include,RADICO,Radico Khaitan Ltd,23022026_www.niftyindices.pdf
+2026-03-30,include,TATACAP,Tata Capital Ltd.,23022026_www.niftyindices.pdf
+2026-03-30,include,TATAINVEST,Tata Investment Corporation Ltd.,23022026_www.niftyindices.pdf
+2026-03-30,include,TMCV,Tata Motors Ltd.,23022026_www.niftyindices.pdf
+2026-09-30,exclude,ALKEM,Alkem Laboratories Ltd.,10082026_www.niftyindices.pdf
+2026-09-30,exclude,COROMANDEL,Coromandel International Ltd.,10082026_www.niftyindices.pdf
+2026-09-30,exclude,HUDCO,Housing & Urban Development Corporation Ltd.,10082026_www.niftyindices.pdf
+2026-09-30,exclude,KPITTECH,KPIT Technologies Ltd.,10082026_www.niftyindices.pdf
+2026-09-30,exclude,SHREECEM,Shree Cement Ltd.,10082026_www.niftyindices.pdf
+2026-09-30,exclude,TATAELXSI,Tata Elxsi Ltd.,10082026_www.niftyindices.pdf
+2026-09-30,exclude,TATAINVEST,Tata Investment Corporation Ltd.,10082026_www.niftyindices.pdf
+2026-09-30,include,APARINDS,Apar Industries Ltd.,10082026_www.niftyindices.pdf
+2026-09-30,include,HINDCOPPER,Hindustan Copper Ltd.,10082026_www.niftyindices.pdf
+2026-09-30,include,LICI,Life Insurance Corporation of India,10082026_www.niftyindices.pdf
+2026-09-30,include,MAHABANK,Bank of Maharashtra,10082026_www.niftyindices.pdf
+2026-09-30,include,MEESHO,Meesho Ltd.,10082026_www.niftyindices.pdf
+2026-09-30,include,NLCINDIA,NLC India Ltd.,10082026_www.niftyindices.pdf
+2026-09-30,include,VAML,Vedanta Aluminium Metal Ltd.,10082026_www.niftyindices.pdf
